@@ -21,6 +21,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/edit/:id" element={<EditSpecSheet />} />
+          <Route path="/create" element={<EditSpecSheet />} />
         </Routes>
       </ErrorBoundary>
     </Router>
