@@ -107,7 +107,7 @@ body {
 }
 
 .spec-sheet-button.danger:hover {
-  background-color: #d32f2f;
+  background-color: var(--danger-dark);
 }
 
 .status-container {
@@ -1048,5 +1048,733 @@ body {
   .form-row {
     flex-direction: column;
     gap: 10px;
+  }
+}
+
+/* Product Identification Layout Styling */
+.product-identification-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.product-info-layout {
+  display: flex;
+  gap: 20px;
+}
+
+.product-info-column {
+  flex: 1;
+  min-width: 0; /* Prevents flex items from overflowing */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.product-details-card,
+.product-specs-card {
+  flex: 1;
+  overflow: hidden; /* Ensures content stays within the card */
+}
+
+.product-image-card {
+  margin-top: auto;
+}
+
+.product-image-upload {
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.product-image-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background-color: rgba(46, 125, 50, 0.03);
+  border-radius: var(--border-radius);
+}
+
+.product-image-preview .image-preview {
+  max-height: 200px;
+  object-fit: contain;
+}
+
+.image-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Improved dimensions input styling */
+.dimensions-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.dimension-input {
+  flex: 1;
+  text-align: center;
+  min-width: 50px; /* Ensure minimum width */
+  max-width: 70px; /* Limit maximum width */
+  padding: 0 4px;
+  text-align: center;
+}
+
+.dimension-separator {
+  color: var(--dark-gray);
+  font-weight: 500;
+  flex: 0 0 auto;
+}
+
+/* Improved input group styling */
+.input-group {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  flex-wrap: nowrap;
+}
+
+.input-group input {
+  flex: 3; /* Give more space to the input */
+  min-width: 80px; /* Ensure minimum width */
+}
+
+.unit-select {
+  width: auto;
+  min-width: 65px; /* Smaller minimum width */
+  max-width: 80px; /* Maximum width */
+  flex: 1; /* Take less space than the input */
+  padding-left: 8px; /* Smaller padding */
+  padding-right: 8px;
+}
+
+.calculated-field {
+  background-color: rgba(46, 125, 50, 0.05);
+  border-color: var(--primary-light);
+  font-weight: 500;
+  color: var(--primary-color);
+}
+
+/* Ensure form rows don't overflow */
+.form-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+  flex-wrap: wrap; /* Allow wrapping if needed */
+  width: 100%;
+}
+
+.form-row .form-group {
+  flex: 1;
+  min-width: 0; /* Prevents flex items from overflowing */
+  max-width: 100%; /* Ensure it doesn't exceed container width */
+}
+
+/* Ensure all inputs have proper sizing */
+.form-control {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Responsive adjustments for product identification */
+@media (max-width: 768px) {
+  .product-info-layout {
+    flex-direction: column;
+  }
+  
+  .dimensions-input {
+    flex-wrap: wrap;
+  }
+  
+  .dimension-input {
+    max-width: none;
+  }
+  
+  .unit-select {
+    max-width: none;
+  }
+}
+
+/* Input sizing for product specifications */
+.input-sm {
+  height: 36px;
+  padding: 6px 10px;
+  font-size: 14px;
+}
+
+.dimension-input.input-sm {
+  max-width: 60px;
+  min-width: 40px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.unit-select.input-sm {
+  min-width: 75px;
+  max-width: 90px;
+  padding-left: 8px;
+  padding-right: 20px; /* Extra space for dropdown arrow */
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.shelf-life-unit {
+  min-width: 85px;
+  max-width: 100px;
+  padding-left: 8px;
+  padding-right: 20px; /* Extra space for dropdown arrow */
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* Simple unit dropdown styling to prevent text cutoff */
+.unit-dropdown {
+  width: 70px; /* Reduced width */
+  min-width: 70px;
+  max-width: 70px;
+  padding: 0 4px; /* Minimal padding */
+  font-size: 13px; /* Smaller font */
+  height: 34px; /* Slightly shorter */
+  line-height: 34px; /* Match height for vertical centering */
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: white;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%23333' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 4px center;
+  background-size: 16px;
+  padding-right: 20px; /* Space for the arrow */
+}
+
+/* Special case for shelf life dropdown which needs more space */
+.shelf-dropdown {
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+}
+
+/* Input groups with dropdowns */
+.input-group {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  flex-wrap: nowrap;
+  gap: 5px;
+}
+
+.input-group input {
+  flex: 3;
+  min-width: 80px;
+  height: 34px; /* Match height with dropdowns */
+}
+
+/* Dimensions input styling */
+.dimensions-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.dimension-input {
+  height: 34px; /* Match height with dropdowns */
+  width: 50px; /* Fixed width */
+  min-width: 50px;
+  max-width: 50px;
+  padding: 0 4px;
+  text-align: center;
+}
+
+/* Compact select styling for UOM dropdowns */
+.compact-select {
+  height: 34px;
+  padding: 2px 20px 2px 8px;
+  font-size: 13px;
+  background-position: right 5px center;
+  background-size: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.compact-select option {
+  padding: 4px;
+  font-size: 13px;
+}
+
+/* Input groups with dropdowns */
+.input-group {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  flex-wrap: nowrap;
+  gap: 5px;
+}
+
+.input-group input {
+  flex: 3;
+  min-width: 80px;
+  height: 34px;
+}
+
+/* Dimensions input styling */
+.dimensions-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.dimension-input {
+  height: 34px;
+  width: 50px;
+  min-width: 50px;
+  max-width: 50px;
+  padding: 0 4px;
+  text-align: center;
+}
+
+/* UOM select styling with proper text alignment */
+.uom-select {
+  width: 70px;
+  min-width: 70px;
+  max-width: 70px;
+  height: 34px;
+  padding: 0 5px; /* Minimal padding */
+  font-size: 13px;
+  text-align: center;
+  vertical-align: middle;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: white;
+  color: var(--text-color);
+  /* Fix for text alignment */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Special case for shelf life dropdown which needs more space */
+.shelf-life-select {
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+}
+
+/* Input groups with dropdowns */
+.input-group {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  flex-wrap: nowrap;
+  gap: 5px;
+}
+
+.input-group input {
+  flex: 3;
+  min-width: 80px;
+  height: 34px;
+}
+
+/* Dimensions input styling */
+.dimensions-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.dimension-input {
+  height: 34px;
+  width: 50px;
+  min-width: 50px;
+  max-width: 50px;
+  padding: 0 4px;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Packaging Claims Component Styling */
+.packaging-claims-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Search bar styling */
+.claims-search-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  background-color: #f5f5f5;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+}
+
+.search-input {
+  position: relative;
+  flex: 1;
+  max-width: 400px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+}
+
+.search-input input {
+  padding-left: 35px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  height: 38px;
+}
+
+.clear-search {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+
+.clear-search:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--danger-color);
+}
+
+.selected-summary {
+  font-size: 14px;
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.selected-count {
+  display: inline-block;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-right: 5px;
+  font-weight: 600;
+}
+
+/* Claims grid layout */
+.claims-grid-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Section styling */
+.claims-section {
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.section-header:hover {
+  background-color: #f0f0f0;
+}
+
+.section-header.expanded {
+  border-bottom-color: var(--border-color);
+  background-color: var(--primary-light);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  color: var(--primary-dark);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-icon {
+  color: var(--primary-color);
+}
+
+.toggle-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-color);
+  transition: transform 0.2s ease;
+}
+
+.selected-badge {
+  background-color: rgba(46, 125, 50, 0.1);
+  color: var(--primary-dark);
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.section-content {
+  padding: 15px;
+}
+
+/* Allergen grid styling */
+.allergen-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.highlight-item {
+  grid-column: 1 / -1;
+  background-color: rgba(46, 125, 50, 0.05);
+  padding: 8px;
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(46, 125, 50, 0.2);
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 6px 8px;
+  border-radius: var(--border-radius);
+  transition: all 0.2s ease;
+}
+
+.checkbox-item:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.checkbox-item.selected-claim {
+  background-color: rgba(46, 125, 50, 0.08);
+}
+
+.checkbox-item input[type="checkbox"] {
+  margin-top: 3px;
+  margin-right: 8px;
+}
+
+.checkbox-label {
+  font-weight: 500;
+  display: block;
+}
+
+.checkbox-help {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* Claims grid styling */
+.claims-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+/* No results message */
+.no-results {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Custom claims styling */
+.custom-claims-container {
+  display: flex;
+  gap: 20px;
+}
+
+.custom-claims-input-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.custom-claims-list-container {
+  flex: 1;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: #f9f9f9;
+  overflow: hidden;
+}
+
+.custom-claims-input {
+  display: flex;
+  gap: 10px;
+}
+
+.custom-claims-input input {
+  flex: 1;
+}
+
+.custom-claims-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 15px;
+  height: 200px;
+  overflow-y: auto;
+}
+
+.empty-claims {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 20px;
+}
+
+.empty-icon {
+  font-size: 32px;
+  color: var(--primary-light);
+  margin-bottom: 15px;
+  opacity: 0.7;
+}
+
+.no-items-message {
+  font-style: italic;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.empty-help {
+  font-size: 13px;
+  margin: 0;
+}
+
+.custom-claim-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+  padding: 10px 15px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.custom-claim-item:hover {
+  border-color: var(--primary-light);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.custom-claim-text {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+}
+
+.claim-icon {
+  color: var(--primary-color);
+}
+
+.remove-button {
+  background: none;
+  border: none;
+  color: var(--danger-color);
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.remove-button:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+.info-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background-color: rgba(46, 125, 50, 0.08);
+  padding: 12px 15px;
+  border-radius: var(--border-radius);
+  font-size: 13px;
+  color: var(--primary-dark);
+  border-left: 3px solid var(--primary-color);
+}
+
+.info-message svg {
+  margin-top: 2px;
+  color: var(--primary-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .claims-search-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .search-input {
+    max-width: none;
+  }
+  
+  .allergen-grid,
+  .claims-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+  
+  .custom-claims-container {
+    flex-direction: column;
   }
 }
