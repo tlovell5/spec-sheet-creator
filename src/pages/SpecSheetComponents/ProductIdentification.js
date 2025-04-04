@@ -1,15 +1,34 @@
 import React, { useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTag, faUpload, faImage, faTrash, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faTag, 
+  faUpload, 
+  faImage, 
+  faTrash, 
+  faExternalLinkAlt, 
+  faBarcode, 
+  faInfoCircle, 
+  faCalendarAlt,
+  faWeightHanging,
+  faBoxOpen,
+  faPalette,
+  faFlask
+} from '@fortawesome/free-solid-svg-icons';
 
-const ProductIdentification = ({ data, onChange }) => {
+const ProductIdentification = ({ specSheetData, setSpecSheetData }) => {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    onChange('productIdentification', name, value);
+    setSpecSheetData(prevData => ({
+      ...prevData,
+      productIdentification: {
+        ...prevData.productIdentification,
+        [name]: value
+      }
+    }));
   };
 
   const handleProductImageUpload = async (e) => {
@@ -50,7 +69,13 @@ const ProductIdentification = ({ data, onChange }) => {
         .getPublicUrl(`product-images/${fileName}`);
       
       // Update the product_image field
-      onChange('productIdentification', 'product_image', publicUrlData.publicUrl);
+      setSpecSheetData(prevData => ({
+        ...prevData,
+        productIdentification: {
+          ...prevData.productIdentification,
+          productImage: publicUrlData.publicUrl
+        }
+      }));
     } catch (error) {
       console.error('Error uploading product image:', error);
       setUploadError('Error uploading image. Please try again.');
@@ -60,31 +85,38 @@ const ProductIdentification = ({ data, onChange }) => {
   };
   
   const handleRemoveProductImage = () => {
-    onChange('productIdentification', 'product_image', '');
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    onChange('productIdentification', name, value);
-  };
-
-  const handleNumericChange = (e) => {
-    const { name, value } = e.target;
-    const numericValue = value === '' ? '' : Number(value);
-    onChange('productIdentification', name, numericValue);
+    setSpecSheetData(prevData => ({
+      ...prevData,
+      productIdentification: {
+        ...prevData.productIdentification,
+        productImage: ''
+      }
+    }));
   };
 
   // Auto-calculate units per pallet when units per case or cases per pallet changes
   const calculateUnitsPerPallet = () => {
-    if (data?.units_per_case && data?.cases_per_pallet) {
-      const unitsPerPallet = data.units_per_case * data.cases_per_pallet;
-      onChange('productIdentification', 'units_per_pallet', unitsPerPallet);
+    if (specSheetData.productIdentification?.unitsPerCase && specSheetData.productIdentification?.casesPerPallet) {
+      const unitsPerPallet = specSheetData.productIdentification.unitsPerCase * specSheetData.productIdentification.casesPerPallet;
+      setSpecSheetData(prevData => ({
+        ...prevData,
+        productIdentification: {
+          ...prevData.productIdentification,
+          unitsPerPallet
+        }
+      }));
     }
   };
 
   const handleUnitsPerCaseChange = (e) => {
     const value = e.target.value === '' ? '' : Number(e.target.value);
-    onChange('productIdentification', 'units_per_case', value);
+    setSpecSheetData(prevData => ({
+      ...prevData,
+      productIdentification: {
+        ...prevData.productIdentification,
+        unitsPerCase: value
+      }
+    }));
     
     // Trigger calculation after state update
     setTimeout(calculateUnitsPerPallet, 0);
@@ -92,7 +124,13 @@ const ProductIdentification = ({ data, onChange }) => {
 
   const handleCasesPerPalletChange = (e) => {
     const value = e.target.value === '' ? '' : Number(e.target.value);
-    onChange('productIdentification', 'cases_per_pallet', value);
+    setSpecSheetData(prevData => ({
+      ...prevData,
+      productIdentification: {
+        ...prevData.productIdentification,
+        casesPerPallet: value
+      }
+    }));
     
     // Trigger calculation after state update
     setTimeout(calculateUnitsPerPallet, 0);
@@ -100,288 +138,283 @@ const ProductIdentification = ({ data, onChange }) => {
 
   return (
     <div className="product-identification-container">
-      <div className="section-header">
-        <FontAwesomeIcon icon={faTag} className="section-icon" />
-        <h2>Product Identification</h2>
-      </div>
-      <div className="section-content">
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="product_name">Product Name</label>
-            <input
-              type="text"
-              id="product_name"
-              name="product_name"
-              className="form-control"
-              value={data?.product_name || ''}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="sku_id">SKU ID</label>
-            <input
-              type="text"
-              id="sku_id"
-              name="sku_id"
-              className="form-control"
-              value={data?.sku_id || ''}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="bom_id">BOM ID</label>
-            <input
-              type="text"
-              id="bom_id"
-              name="bom_id"
-              className="form-control"
-              value={data?.bom_id || ''}
-              onChange={handleChange}
-            />
-          </div>
+      <div className="tabs-container">
+        <div className="tabs-header">
+          <button className="tab-button active">Basic Information</button>
+          <button className="tab-button">Specifications</button>
+          <button className="tab-button">Packaging</button>
         </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="wip_id">WIP ID</label>
-            <input
-              type="text"
-              id="wip_id"
-              name="wip_id"
-              className="form-control"
-              value={data?.wip_id || ''}
-              onChange={handleChange}
-            />
+        
+        <div className="tab-content">
+          <div className="card-grid">
+            <div className="info-card">
+              <div className="info-card-title">
+                <FontAwesomeIcon icon={faTag} />
+                Product Details
+              </div>
+              <div className="form-group">
+                <label htmlFor="productName" className="required-field">Product Name</label>
+                <input
+                  type="text"
+                  id="productName"
+                  name="productName"
+                  value={specSheetData.productIdentification?.productName || ''}
+                  onChange={handleInputChange}
+                  placeholder="Enter product name"
+                />
+                <span className="field-help">The official name of the product as it will appear on packaging</span>
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="productCode" className="required-field">Product Code</label>
+                <input
+                  type="text"
+                  id="productCode"
+                  name="productCode"
+                  value={specSheetData.productIdentification?.productCode || ''}
+                  onChange={handleInputChange}
+                  placeholder="Enter product code"
+                />
+                <span className="field-help">Unique identifier for this product</span>
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="upc">UPC/Barcode</label>
+                <div className="input-with-icon">
+                  <FontAwesomeIcon icon={faBarcode} className="input-icon" />
+                  <input
+                    type="text"
+                    id="upc"
+                    name="upc"
+                    value={specSheetData.productIdentification?.upc || ''}
+                    onChange={handleInputChange}
+                    placeholder="Enter UPC or barcode"
+                  />
+                </div>
+                <span className="field-help">Universal Product Code for retail scanning</span>
+              </div>
+            </div>
+            
+            <div className="info-card">
+              <div className="info-card-title">
+                <FontAwesomeIcon icon={faInfoCircle} />
+                Description & Classification
+              </div>
+              <div className="form-group">
+                <label htmlFor="description">Product Description</label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={specSheetData.productIdentification?.description || ''}
+                  onChange={handleInputChange}
+                  placeholder="Enter product description"
+                  rows="3"
+                />
+                <span className="field-help">Brief description of the product and its purpose</span>
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="category">Product Category</label>
+                <select
+                  id="category"
+                  name="category"
+                  value={specSheetData.productIdentification?.category || ''}
+                  onChange={handleInputChange}
+                >
+                  <option value="">Select Category</option>
+                  <option value="Beverage">Beverage</option>
+                  <option value="Food">Food</option>
+                  <option value="Supplement">Supplement</option>
+                  <option value="Cosmetic">Cosmetic</option>
+                  <option value="Cleaning">Cleaning</option>
+                  <option value="Other">Other</option>
+                </select>
+                <span className="field-help">General product classification</span>
+              </div>
+            </div>
           </div>
-          <div className="form-group">
-            <label htmlFor="spec_revision">Spec Revision</label>
-            <input
-              type="text"
-              id="spec_revision"
-              name="spec_revision"
-              className="form-control"
-              value={data?.spec_revision || ''}
-              onChange={handleChange}
-            />
+          
+          <div className="card-grid">
+            <div className="info-card">
+              <div className="info-card-title">
+                <FontAwesomeIcon icon={faCalendarAlt} />
+                Dates & Lifecycle
+              </div>
+              <div className="form-group">
+                <label htmlFor="creationDate">Creation Date</label>
+                <input
+                  type="date"
+                  id="creationDate"
+                  name="creationDate"
+                  value={specSheetData.productIdentification?.creationDate || ''}
+                  onChange={handleInputChange}
+                />
+                <span className="field-help">When this product was first created</span>
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="shelfLife">Shelf Life</label>
+                <div className="input-group">
+                  <input
+                    type="number"
+                    id="shelfLife"
+                    name="shelfLife"
+                    value={specSheetData.productIdentification?.shelfLife || ''}
+                    onChange={handleInputChange}
+                    placeholder="Enter shelf life"
+                    min="0"
+                  />
+                  <select
+                    id="shelfLifeUnit"
+                    name="shelfLifeUnit"
+                    value={specSheetData.productIdentification?.shelfLifeUnit || 'months'}
+                    onChange={handleInputChange}
+                  >
+                    <option value="days">Days</option>
+                    <option value="months">Months</option>
+                    <option value="years">Years</option>
+                  </select>
+                </div>
+                <span className="field-help">How long the product remains viable after production</span>
+              </div>
+            </div>
+            
+            <div className="info-card">
+              <div className="info-card-title">
+                <FontAwesomeIcon icon={faWeightHanging} />
+                Physical Properties
+              </div>
+              <div className="form-group">
+                <label htmlFor="netWeight">Net Weight</label>
+                <div className="input-group">
+                  <input
+                    type="number"
+                    id="netWeight"
+                    name="netWeight"
+                    value={specSheetData.productIdentification?.netWeight || ''}
+                    onChange={handleInputChange}
+                    placeholder="Enter weight"
+                    min="0"
+                    step="0.01"
+                  />
+                  <select
+                    id="weightUnit"
+                    name="weightUnit"
+                    value={specSheetData.productIdentification?.weightUnit || 'oz'}
+                    onChange={handleInputChange}
+                  >
+                    <option value="oz">oz</option>
+                    <option value="lb">lb</option>
+                    <option value="g">g</option>
+                    <option value="kg">kg</option>
+                  </select>
+                </div>
+                <span className="field-help">Weight of the product without packaging</span>
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="dimensions">Dimensions (L × W × H)</label>
+                <div className="dimensions-input">
+                  <input
+                    type="number"
+                    id="length"
+                    name="length"
+                    value={specSheetData.productIdentification?.length || ''}
+                    onChange={handleInputChange}
+                    placeholder="L"
+                    min="0"
+                    step="0.1"
+                  />
+                  <span>×</span>
+                  <input
+                    type="number"
+                    id="width"
+                    name="width"
+                    value={specSheetData.productIdentification?.width || ''}
+                    onChange={handleInputChange}
+                    placeholder="W"
+                    min="0"
+                    step="0.1"
+                  />
+                  <span>×</span>
+                  <input
+                    type="number"
+                    id="height"
+                    name="height"
+                    value={specSheetData.productIdentification?.height || ''}
+                    onChange={handleInputChange}
+                    placeholder="H"
+                    min="0"
+                    step="0.1"
+                  />
+                  <select
+                    id="dimensionUnit"
+                    name="dimensionUnit"
+                    value={specSheetData.productIdentification?.dimensionUnit || 'in'}
+                    onChange={handleInputChange}
+                  >
+                    <option value="in">in</option>
+                    <option value="cm">cm</option>
+                    <option value="mm">mm</option>
+                  </select>
+                </div>
+                <span className="field-help">Physical dimensions of the product</span>
+              </div>
+            </div>
           </div>
-          <div className="form-group">
-            <label htmlFor="intended_use">Intended Use</label>
-            <select
-              id="intended_use"
-              name="intended_use"
-              className="form-control"
-              value={data?.intended_use || ''}
-              onChange={handleChange}
-            >
-              <option value="">Select Intended Use</option>
-              <option value="Retail">Retail</option>
-              <option value="Ingredient">Ingredient</option>
-              <option value="Inclusion">Inclusion</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="unit_claim_weight">Unit Claim Weight</label>
-            <input
-              type="number"
-              id="unit_claim_weight"
-              name="unit_claim_weight"
-              className="form-control"
-              value={data?.unit_claim_weight || ''}
-              onChange={handleNumericChange}
-              step="0.01"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="weight_uom">Unit of Measure</label>
-            <select
-              id="weight_uom"
-              name="weight_uom"
-              className="form-control"
-              value={data?.weight_uom || ''}
-              onChange={handleChange}
-            >
-              <option value="">Select UOM</option>
-              <option value="g">Grams (g)</option>
-              <option value="kg">Kilograms (kg)</option>
-              <option value="oz">Ounces (oz)</option>
-              <option value="lb">Pounds (lb)</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="units_per_case">Units per Case</label>
-            <input
-              type="number"
-              id="units_per_case"
-              name="units_per_case"
-              className="form-control"
-              value={data?.units_per_case || ''}
-              onChange={handleUnitsPerCaseChange}
-              min="1"
-              step="1"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="cases_per_pallet">Cases per Pallet</label>
-            <input
-              type="number"
-              id="cases_per_pallet"
-              name="cases_per_pallet"
-              className="form-control"
-              value={data?.cases_per_pallet || ''}
-              onChange={handleCasesPerPalletChange}
-              min="1"
-              step="1"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="units_per_pallet">Units per Pallet (Auto-calculated)</label>
-            <input
-              type="number"
-              id="units_per_pallet"
-              name="units_per_pallet"
-              className="form-control"
-              value={data?.units_per_pallet || ''}
-              readOnly
-              disabled
-            />
-          </div>
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="unit_upc">Unit UPC</label>
-            <input
-              type="text"
-              id="unit_upc"
-              name="unit_upc"
-              className="form-control"
-              value={data?.unit_upc || ''}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="case_upc">Case UPC</label>
-            <input
-              type="text"
-              id="case_upc"
-              name="case_upc"
-              className="form-control"
-              value={data?.case_upc || ''}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="pallet_upc">Pallet UPC</label>
-            <input
-              type="text"
-              id="pallet_upc"
-              name="pallet_upc"
-              className="form-control"
-              value={data?.pallet_upc || ''}
-              onChange={handleChange}
-            />
-          </div>
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="lot_code_format">Lot Code Format</label>
-            <input
-              type="text"
-              id="lot_code_format"
-              name="lot_code_format"
-              className="form-control"
-              value={data?.lot_code_format || ''}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="shelf_life_years">Shelf Life (Years)</label>
-            <input
-              type="number"
-              id="shelf_life_years"
-              name="shelf_life_years"
-              className="form-control"
-              value={data?.shelf_life_years || ''}
-              onChange={handleNumericChange}
-              min="0"
-              max="10"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="shelf_life_months">Shelf Life (Months)</label>
-            <input
-              type="number"
-              id="shelf_life_months"
-              name="shelf_life_months"
-              className="form-control"
-              value={data?.shelf_life_months || ''}
-              onChange={handleNumericChange}
-              min="0"
-              max="11"
-            />
-          </div>
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <div className="file-upload">
-              <label className="file-upload-label">Product Picture</label>
-              <label className="file-upload-input">
-                <FontAwesomeIcon icon={faUpload} /> 
-                <span>Click or drag to upload product image</span>
+          
+          <div className="info-card">
+            <div className="info-card-title">
+              <FontAwesomeIcon icon={faImage} />
+              Product Image
+            </div>
+            
+            {!specSheetData.productIdentification?.productImage ? (
+              <div 
+                className="image-upload-area"
+                onClick={() => document.getElementById('productImageUpload').click()}
+              >
+                <FontAwesomeIcon icon={faUpload} className="image-upload-icon" />
+                <p>Click to upload product image</p>
+                <p className="field-help">Recommended size: 800x600px, Max size: 5MB</p>
+                <p className="field-help">Supported formats: JPG, PNG, GIF</p>
                 <input
                   type="file"
+                  id="productImageUpload"
                   accept="image/*"
                   onChange={handleProductImageUpload}
                   style={{ display: 'none' }}
                 />
-              </label>
-              {uploadError && <div className="error-message">{uploadError}</div>}
-            </div>
-            
-            {data?.product_image ? (
-              <div className="image-preview-container">
-                <div className="image-preview">
-                  <img src={data.product_image} alt="Product" />
-                  
-                  {uploading && (
-                    <div className="uploading-overlay">
-                      <div className="uploading-spinner"></div>
-                      <div className="uploading-text">Uploading...</div>
-                    </div>
-                  )}
-                  
-                  <div className="image-actions">
-                    <button 
-                      className="image-action-button" 
-                      onClick={() => window.open(data.product_image, '_blank')}
-                      title="View Full Size"
-                    >
-                      <FontAwesomeIcon icon={faExternalLinkAlt} />
-                    </button>
-                    <button 
-                      className="image-action-button delete" 
-                      onClick={handleRemoveProductImage}
-                      title="Remove Image"
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
+                {uploadError && <p className="error-message">{uploadError}</p>}
+                {uploading && (
+                  <div className="upload-status">
+                    <FontAwesomeIcon icon={faSpinner} spin />
+                    <span>Uploading...</span>
                   </div>
-                </div>
-                <div className="image-caption">Product Image</div>
+                )}
               </div>
             ) : (
-              <div className="image-preview-container">
-                <div className="image-placeholder">
-                  <FontAwesomeIcon icon={faImage} />
-                  <span>No product image uploaded</span>
+              <div className="product-image-preview">
+                <img 
+                  src={specSheetData.productIdentification.productImage} 
+                  alt="Product" 
+                  className="image-preview"
+                />
+                <div className="image-actions">
+                  <button 
+                    className="action-button"
+                    onClick={() => window.open(specSheetData.productIdentification.productImage, '_blank')}
+                  >
+                    <FontAwesomeIcon icon={faExternalLinkAlt} />
+                    View Full Size
+                  </button>
+                  <button 
+                    className="action-button danger"
+                    onClick={handleRemoveProductImage}
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                    Remove Image
+                  </button>
                 </div>
               </div>
             )}

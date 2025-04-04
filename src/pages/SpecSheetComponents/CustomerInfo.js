@@ -1,7 +1,18 @@
 import React, { useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBuilding, faUpload, faImage, faTrash, faSpinner, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faBuilding, 
+  faUpload, 
+  faImage, 
+  faTrash, 
+  faSpinner, 
+  faCheck, 
+  faUser, 
+  faEnvelope, 
+  faPhone, 
+  faMapMarkerAlt 
+} from '@fortawesome/free-solid-svg-icons';
 
 const CustomerInfo = ({ specSheetData, setSpecSheetData }) => {
   const [uploading, setUploading] = useState(false);
@@ -82,15 +93,15 @@ const CustomerInfo = ({ specSheetData, setSpecSheetData }) => {
   };
 
   return (
-    <div className="spec-sheet-section">
-      <div className="section-header">
-        <FontAwesomeIcon icon={faBuilding} className="section-icon" />
-        <h2>Customer Information</h2>
-      </div>
-      <div className="section-content">
-        <div className="form-row">
+    <div className="customer-info-container">
+      <div className="card-grid">
+        <div className="info-card">
+          <div className="info-card-title">
+            <FontAwesomeIcon icon={faBuilding} />
+            Company Details
+          </div>
           <div className="form-group">
-            <label htmlFor="companyName">Company Name</label>
+            <label htmlFor="companyName" className="required-field">Company Name</label>
             <input
               type="text"
               id="companyName"
@@ -99,23 +110,70 @@ const CustomerInfo = ({ specSheetData, setSpecSheetData }) => {
               onChange={handleInputChange}
               placeholder="Enter company name"
             />
+            <span className="field-help">The official name of the customer's company</span>
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="industry">Industry</label>
+            <select
+              id="industry"
+              name="industry"
+              value={specSheetData.customerInfo.industry || ''}
+              onChange={handleInputChange}
+            >
+              <option value="">Select Industry</option>
+              <option value="Food & Beverage">Food & Beverage</option>
+              <option value="Cosmetics">Cosmetics</option>
+              <option value="Pharmaceuticals">Pharmaceuticals</option>
+              <option value="Nutraceuticals">Nutraceuticals</option>
+              <option value="Chemicals">Chemicals</option>
+              <option value="Other">Other</option>
+            </select>
+            <span className="field-help">Select the industry this customer operates in</span>
+          </div>
+        </div>
+        
+        <div className="info-card">
+          <div className="info-card-title">
+            <FontAwesomeIcon icon={faUser} />
+            Contact Person
           </div>
           <div className="form-group">
-            <label htmlFor="contactName">Contact Name</label>
+            <label htmlFor="contactName" className="required-field">Contact Name</label>
             <input
               type="text"
               id="contactName"
               name="contactName"
               value={specSheetData.customerInfo.contactName || ''}
               onChange={handleInputChange}
-              placeholder="Enter contact name"
+              placeholder="Enter contact person's name"
             />
+            <span className="field-help">The primary point of contact at the company</span>
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="position">Position</label>
+            <input
+              type="text"
+              id="position"
+              name="position"
+              value={specSheetData.customerInfo.position || ''}
+              onChange={handleInputChange}
+              placeholder="Enter contact's position"
+            />
+            <span className="field-help">Job title or role of the contact person</span>
           </div>
         </div>
-        
-        <div className="form-row">
+      </div>
+      
+      <div className="card-grid">
+        <div className="info-card">
+          <div className="info-card-title">
+            <FontAwesomeIcon icon={faEnvelope} />
+            Contact Information
+          </div>
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email" className="required-field">Email</label>
             <input
               type="email"
               id="email"
@@ -124,7 +182,9 @@ const CustomerInfo = ({ specSheetData, setSpecSheetData }) => {
               onChange={handleInputChange}
               placeholder="Enter email address"
             />
+            <span className="field-help">Primary email for communications</span>
           </div>
+          
           <div className="form-group">
             <label htmlFor="phone">Phone</label>
             <input
@@ -135,10 +195,15 @@ const CustomerInfo = ({ specSheetData, setSpecSheetData }) => {
               onChange={handleInputChange}
               placeholder="Enter phone number"
             />
+            <span className="field-help">Best contact number</span>
           </div>
         </div>
         
-        <div className="form-row">
+        <div className="info-card">
+          <div className="info-card-title">
+            <FontAwesomeIcon icon={faMapMarkerAlt} />
+            Address
+          </div>
           <div className="form-group">
             <label htmlFor="address">Address</label>
             <textarea
@@ -149,59 +214,75 @@ const CustomerInfo = ({ specSheetData, setSpecSheetData }) => {
               placeholder="Enter company address"
               rows="3"
             />
+            <span className="field-help">Full company address including city, state, and zip code</span>
           </div>
         </div>
+      </div>
+      
+      <div className="info-card">
+        <div className="info-card-title">
+          <FontAwesomeIcon icon={faImage} />
+          Company Logo
+        </div>
         
-        <div className="form-row">
-          <div className="form-group">
-            <div className="file-upload">
-              <label className="file-upload-label">Company Logo</label>
-              <label className="file-upload-input">
-                <FontAwesomeIcon icon={faUpload} /> 
-                <span>Click or drag to upload logo</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                  style={{ display: 'none' }}
-                />
-              </label>
-              {uploadError && <div className="error-message">{uploadError}</div>}
-            </div>
-            
-            {specSheetData.customerInfo.logo ? (
-              <div className="image-preview-container">
-                <div className="logo-preview">
-                  <img src={specSheetData.customerInfo.logo} alt="Company Logo" />
-                  
-                  {uploading && (
-                    <div className="uploading-overlay">
-                      <div className="uploading-spinner"></div>
-                      <div className="uploading-text">Uploading...</div>
-                    </div>
-                  )}
-                  
-                  <div className="image-actions">
-                    <button 
-                      className="image-action-button delete" 
-                      onClick={handleRemoveLogo}
-                      title="Remove Logo"
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
-                  </div>
-                </div>
-                <div className="image-caption">Company Logo</div>
-              </div>
-            ) : (
-              <div className="image-preview-container">
-                <div className="image-placeholder">
-                  <FontAwesomeIcon icon={faImage} />
-                  <span>No logo uploaded</span>
-                </div>
+        {!specSheetData.customerInfo.logo ? (
+          <div 
+            className="image-upload-area"
+            onClick={() => document.getElementById('logoUpload').click()}
+          >
+            <FontAwesomeIcon icon={faUpload} className="image-upload-icon" />
+            <p>Click to upload company logo</p>
+            <p className="field-help">Recommended size: 300x150px, Max size: 5MB</p>
+            <p className="field-help">Supported formats: JPG, PNG, GIF</p>
+            <input
+              type="file"
+              id="logoUpload"
+              accept="image/*"
+              onChange={handleLogoUpload}
+              style={{ display: 'none' }}
+            />
+            {uploadError && <p className="error-message">{uploadError}</p>}
+            {uploading && (
+              <div className="upload-status">
+                <FontAwesomeIcon icon={faSpinner} spin />
+                <span>Uploading...</span>
               </div>
             )}
           </div>
+        ) : (
+          <div className="logo-preview-container">
+            <img 
+              src={specSheetData.customerInfo.logo} 
+              alt="Company Logo" 
+              className="image-preview"
+            />
+            <button 
+              className="action-button danger"
+              onClick={handleRemoveLogo}
+            >
+              <FontAwesomeIcon icon={faTrash} />
+              Remove Logo
+            </button>
+          </div>
+        )}
+      </div>
+      
+      <div className="info-card">
+        <div className="info-card-title">
+          <FontAwesomeIcon icon={faCheck} />
+          Additional Information
+        </div>
+        <div className="form-group">
+          <label htmlFor="notes">Notes</label>
+          <textarea
+            id="notes"
+            name="notes"
+            value={specSheetData.customerInfo.notes || ''}
+            onChange={handleInputChange}
+            placeholder="Enter any additional notes about this customer"
+            rows="4"
+          />
+          <span className="field-help">Any special considerations or important details about this customer</span>
         </div>
       </div>
     </div>
