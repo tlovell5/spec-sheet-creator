@@ -2096,3 +2096,144 @@ body {
   margin-top: 16px;
   border-left: 3px solid var(--primary-color);
 }
+
+/* Production Details and Packout Details Enhancements */
+.production-details-container,
+.packout-details-container {
+  padding: 20px;
+  border-radius: 10px;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
+}
+
+.production-details-container .form-row,
+.packout-details-container .form-row {
+  margin-bottom: 20px;
+}
+
+.production-details-container .form-group,
+.packout-details-container .form-group {
+  position: relative;
+}
+
+.production-details-container label,
+.packout-details-container label {
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.production-details-container .form-control,
+.packout-details-container .form-control {
+  border: 1px solid var(--gray-medium);
+  border-radius: 6px;
+  padding: 10px 12px;
+  transition: all 0.2s ease;
+  width: 100%;
+  background-color: #fff;
+}
+
+.production-details-container .form-control:focus,
+.packout-details-container .form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+  outline: none;
+}
+
+.production-details-container .form-control:disabled,
+.packout-details-container .form-control:disabled {
+  background-color: var(--gray-light);
+  cursor: not-allowed;
+}
+
+.production-details-container .file-upload-label,
+.packout-details-container .file-upload-label {
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  display: block;
+}
+
+.production-details-container .file-upload,
+.packout-details-container .file-upload {
+  position: relative;
+}
+
+.production-details-container .file-upload-input,
+.packout-details-container .file-upload-input {
+  border: 1px dashed var(--gray-medium);
+  border-radius: 6px;
+  padding: 10px 12px;
+  background-color: var(--gray-light);
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.production-details-container .file-upload-input:hover,
+.packout-details-container .file-upload-input:hover {
+  border-color: var(--primary-color);
+  background-color: rgba(46, 125, 50, 0.05);
+}
+
+.production-details-container .image-preview,
+.packout-details-container .image-preview {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.production-details-container .image-preview img,
+.packout-details-container .image-preview img {
+  max-width: 200px;
+  margin-top: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Case materials styling */
+.case-materials {
+  background-color: var(--gray-light);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 15px;
+}
+
+.case-materials ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.case-materials li {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.case-materials li:last-child {
+  border-bottom: none;
+}
+
+/* Section headers */
+.production-section-title,
+.packout-section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Number inputs */
+input[type="number"].form-control {
+  text-align: right;
+}
+
+/* Disabled fields with calculated values */
+.calculated-field {
+  background-color: var(--gray-light);
+  font-weight: 500;
+  color: var(--text-primary);
+}

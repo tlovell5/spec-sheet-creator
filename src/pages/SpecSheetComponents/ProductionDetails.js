@@ -204,6 +204,7 @@ function ProductionDetails({
 
   return (
     <div className="production-details-container">
+      <h3 className="production-section-title">Product Information</h3>
       <div className="form-row">
         <div className="form-group">
           <label>Unit UPC</label>
@@ -234,6 +235,7 @@ function ProductionDetails({
         </div>
       </div>
       
+      <h3 className="production-section-title">Weight Information</h3>
       <div className="form-row">
         <div className="form-group">
           <label htmlFor="packaging_weight_g">Packaging Weight (g)</label>
@@ -260,7 +262,7 @@ function ProductionDetails({
           <input
             type="number"
             id="ingredient_weight_g"
-            className="form-control"
+            className="form-control calculated-field"
             value={productionDetails.ingredient_weight_g || ''}
             disabled
           />
@@ -270,13 +272,14 @@ function ProductionDetails({
           <input
             type="number"
             id="net_weight_g"
-            className="form-control"
+            className="form-control calculated-field"
             value={productionDetails.net_weight_g || ''}
             disabled
           />
         </div>
       </div>
       
+      <h3 className="production-section-title">Artwork & Images</h3>
       <div className="form-row">
         <div className="form-group">
           <label className="file-upload-label">Front Artwork</label>

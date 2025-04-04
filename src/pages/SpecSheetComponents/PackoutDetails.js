@@ -221,6 +221,7 @@ function PackoutDetails({ specSheetId, unitsPerCase, casesPerPallet, caseUpc }) 
 
   return (
     <div className="packout-details-container">
+      <h3 className="packout-section-title">Case Information</h3>
       <div className="form-row">
         <div className="form-group">
           <label>Case Materials</label>
@@ -258,6 +259,7 @@ function PackoutDetails({ specSheetId, unitsPerCase, casesPerPallet, caseUpc }) 
         </div>
       </div>
       
+      <h3 className="packout-section-title">Case Configuration</h3>
       <div className="form-row">
         <div className="form-group">
           <label htmlFor="case_configuration">Case Configuration</label>
@@ -267,6 +269,7 @@ function PackoutDetails({ specSheetId, unitsPerCase, casesPerPallet, caseUpc }) 
             className="form-control"
             value={packoutDetails.case_configuration || ''}
             onChange={(e) => handleChange('case_configuration', e.target.value)}
+            placeholder="Enter case configuration"
           />
         </div>
         <div className="form-group">
@@ -290,6 +293,7 @@ function PackoutDetails({ specSheetId, unitsPerCase, casesPerPallet, caseUpc }) 
             className="form-control"
             value={packoutDetails.case_label_placement || ''}
             onChange={(e) => handleChange('case_label_placement', e.target.value)}
+            placeholder="Enter label placement"
           />
         </div>
       </div>
@@ -300,13 +304,14 @@ function PackoutDetails({ specSheetId, unitsPerCase, casesPerPallet, caseUpc }) 
           <input
             type="number"
             id="total_case_weight_lbs"
-            className="form-control"
+            className="form-control calculated-field"
             value={packoutDetails.total_case_weight_lbs ? packoutDetails.total_case_weight_lbs.toFixed(2) : ''}
             disabled
           />
         </div>
       </div>
       
+      <h3 className="packout-section-title">Pallet Configuration</h3>
       <div className="form-row">
         <div className="form-group">
           <label htmlFor="ti_hi">TI/HI</label>
@@ -327,6 +332,7 @@ function PackoutDetails({ specSheetId, unitsPerCase, casesPerPallet, caseUpc }) 
             className="form-control"
             value={packoutDetails.pallet_configuration || ''}
             onChange={(e) => handleChange('pallet_configuration', e.target.value)}
+            placeholder="Enter pallet configuration"
           />
         </div>
         <div className="form-group">
@@ -334,13 +340,14 @@ function PackoutDetails({ specSheetId, unitsPerCase, casesPerPallet, caseUpc }) 
           <input
             type="number"
             id="pallet_weight_lbs"
-            className="form-control"
+            className="form-control calculated-field"
             value={packoutDetails.pallet_weight_lbs ? packoutDetails.pallet_weight_lbs.toFixed(2) : ''}
             disabled
           />
         </div>
       </div>
       
+      <h3 className="packout-section-title">Pallet Configuration Images</h3>
       <div className="form-row">
         <div className="form-group">
           <label className="file-upload-label">Single Layer Pallet Configuration</label>
