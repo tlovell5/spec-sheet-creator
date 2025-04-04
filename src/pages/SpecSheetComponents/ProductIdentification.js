@@ -13,7 +13,8 @@ import {
   faWeightHanging,
   faBoxOpen,
   faPalette,
-  faFlask
+  faFlask,
+  faSpinner
 } from '@fortawesome/free-solid-svg-icons';
 
 const ProductIdentification = ({ specSheetData, setSpecSheetData }) => {
