@@ -389,7 +389,7 @@ const ProductIdentification = ({ specSheetData, setSpecSheetData }) => {
                 {uploadError && <p className="error-message">{uploadError}</p>}
                 {uploading && (
                   <div className="upload-status">
-                    <FontAwesomeIcon icon={faSpinner} spin />
+                    <FontAwesomeIcon icon={faSpinner} pulse />
                     <span>Uploading...</span>
                   </div>
                 )}
