@@ -110,8 +110,11 @@ const ProductIdentification = ({ specSheetData, setSpecSheetData }) => {
 
   // Auto-calculate units per pallet when units per case or cases per pallet changes
   const calculateUnitsPerPallet = () => {
-    if (specSheetData.productIdentification?.unitsPerCase && specSheetData.productIdentification?.casesPerPallet) {
-      const unitsPerPallet = specSheetData.productIdentification.unitsPerCase * specSheetData.productIdentification.casesPerPallet;
+    const unitsPerCase = Number(specSheetData.productIdentification?.unitsPerCase) || 0;
+    const casesPerPallet = Number(specSheetData.productIdentification?.casesPerPallet) || 0;
+    
+    if (unitsPerCase > 0 && casesPerPallet > 0) {
+      const unitsPerPallet = unitsPerCase * casesPerPallet;
       setSpecSheetData(prevData => ({
         ...prevData,
         productIdentification: {
@@ -119,8 +122,22 @@ const ProductIdentification = ({ specSheetData, setSpecSheetData }) => {
           unitsPerPallet
         }
       }));
+    } else {
+      // Clear the units per pallet if either input is missing or zero
+      setSpecSheetData(prevData => ({
+        ...prevData,
+        productIdentification: {
+          ...prevData.productIdentification,
+          unitsPerPallet: ''
+        }
+      }));
     }
   };
+
+  // Add useEffect to ensure calculation happens when component mounts or values change
+  useEffect(() => {
+    calculateUnitsPerPallet();
+  }, [specSheetData.productIdentification?.unitsPerCase, specSheetData.productIdentification?.casesPerPallet]);
 
   const handleUnitsPerCaseChange = (e) => {
     const value = e.target.value === '' ? '' : Number(e.target.value);
@@ -131,9 +148,6 @@ const ProductIdentification = ({ specSheetData, setSpecSheetData }) => {
         unitsPerCase: value
       }
     }));
-    
-    // Trigger calculation after state update
-    setTimeout(calculateUnitsPerPallet, 0);
   };
 
   const handleCasesPerPalletChange = (e) => {
@@ -145,9 +159,6 @@ const ProductIdentification = ({ specSheetData, setSpecSheetData }) => {
         casesPerPallet: value
       }
     }));
-    
-    // Trigger calculation after state update
-    setTimeout(calculateUnitsPerPallet, 0);
   };
 
   return (
@@ -226,53 +237,6 @@ const ProductIdentification = ({ specSheetData, setSpecSheetData }) => {
                   />
                 </div>
                 <span className="field-help">Universal Product Code for retail scanning</span>
-              </div>
-            </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="netWeight">Packaging Claim Weight</label>
-                <div className="input-with-icon">
-                  <FontAwesomeIcon icon={faWeightHanging} className="input-icon" />
-                  <div className="input-group">
-                    <input
-                      type="number"
-                      id="netWeight"
-                      name="netWeight"
-                      value={specSheetData.productIdentification?.netWeight || ''}
-                      onChange={handleInputChange}
-                      className="form-control"
-                      placeholder="Enter weight"
-                      step="0.01"
-                      style={{
-                        borderTopRightRadius: 0,
-                        borderBottomRightRadius: 0,
-                        borderRight: 'none',
-                        flexGrow: 1
-                      }}
-                    />
-                    <select
-                      id="weightUom"
-                      name="weightUom"
-                      value={specSheetData.productIdentification?.weightUom || 'g'}
-                      onChange={handleInputChange}
-                      className="form-select"
-                      style={{
-                        borderTopLeftRadius: 0,
-                        borderBottomLeftRadius: 0,
-                        width: '70px',
-                        flexShrink: 0,
-                        borderLeft: 'none'
-                      }}
-                    >
-                      <option value="g">g</option>
-                      <option value="kg">kg</option>
-                      <option value="oz">oz</option>
-                      <option value="lbs">lbs</option>
-                    </select>
-                  </div>
-                </div>
-                <span className="field-help">Net weight as stated on packaging</span>
               </div>
             </div>
             
@@ -438,6 +402,36 @@ const ProductIdentification = ({ specSheetData, setSpecSheetData }) => {
               Product Specifications
             </div>
             
+            <div className="form-group">
+              <label htmlFor="netWeight">Packaging Claim Weight</label>
+              <div className="weight-group">
+                <div className="input-icon-container">
+                  <FontAwesomeIcon icon={faWeightHanging} />
+                </div>
+                <input
+                  type="number"
+                  id="netWeight"
+                  name="netWeight"
+                  value={specSheetData.productIdentification?.netWeight || ''}
+                  onChange={handleInputChange}
+                  placeholder="Enter weight"
+                  step="0.01"
+                />
+                <select
+                  id="weightUom"
+                  name="weightUom"
+                  value={specSheetData.productIdentification?.weightUom || 'g'}
+                  onChange={handleInputChange}
+                >
+                  <option value="g">g</option>
+                  <option value="kg">kg</option>
+                  <option value="oz">oz</option>
+                  <option value="lbs">lbs</option>
+                </select>
+              </div>
+              <span className="field-help">Net weight as stated on packaging</span>
+            </div>
+            
             <div className="section-divider">
               <FontAwesomeIcon icon={faBoxOpen} className="section-icon" />
               Packaging Information
@@ -483,21 +477,23 @@ const ProductIdentification = ({ specSheetData, setSpecSheetData }) => {
               </div>
             </div>
             
-            <div className="form-group">
-              <label htmlFor="unitsPerPallet">Units per Pallet</label>
-              <div className="input-with-icon">
-                <FontAwesomeIcon icon={faCalculator} className="input-icon" />
-                <input
-                  type="number"
-                  id="unitsPerPallet"
-                  name="unitsPerPallet"
-                  value={specSheetData.productIdentification?.unitsPerPallet || ''}
-                  readOnly
-                  disabled
-                  className="form-control calculated-field"
-                />
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="unitsPerPallet">Units per Pallet</label>
+                <div className="input-with-icon">
+                  <FontAwesomeIcon icon={faCalculator} className="input-icon" />
+                  <input
+                    type="number"
+                    id="unitsPerPallet"
+                    name="unitsPerPallet"
+                    value={specSheetData.productIdentification?.unitsPerPallet || ''}
+                    readOnly
+                    disabled
+                    className="form-control calculated-field"
+                  />
+                </div>
+                <span className="field-help">Auto-calculated from units per case × cases per pallet</span>
               </div>
-              <span className="field-help">Auto-calculated from units per case × cases per pallet</span>
             </div>
             
             <div className="section-divider">
@@ -524,45 +520,28 @@ const ProductIdentification = ({ specSheetData, setSpecSheetData }) => {
               
               <div className="form-group">
                 <label htmlFor="shelfLife">Shelf Life</label>
-                <div className="input-with-icon">
-                  <FontAwesomeIcon icon={faClock} className="input-icon" />
-                  <div className="input-group">
-                    <input
-                      type="number"
-                      id="shelfLife"
-                      name="shelfLife"
-                      value={specSheetData.productIdentification?.shelfLife || ''}
-                      onChange={handleInputChange}
-                      placeholder="Shelf life"
-                      min="0"
-                      className="form-control"
-                      style={{
-                        borderTopRightRadius: 0,
-                        borderBottomRightRadius: 0,
-                        borderRight: 'none',
-                        flexGrow: 1
-                      }}
-                    />
-                    <select
-                      id="shelfLifeUnit"
-                      name="shelfLifeUnit"
-                      value={specSheetData.productIdentification?.shelfLifeUnit || ''}
-                      onChange={handleInputChange}
-                      className="form-select"
-                      style={{
-                        borderTopLeftRadius: 0,
-                        borderBottomLeftRadius: 0,
-                        width: '80px',
-                        flexShrink: 0,
-                        borderLeft: 'none'
-                      }}
-                    >
-                      <option value="days">Days</option>
-                      <option value="weeks">Weeks</option>
-                      <option value="months">Months</option>
-                      <option value="years">Years</option>
-                    </select>
+                <div className="shelf-life-group">
+                  <div className="input-icon-container">
+                    <FontAwesomeIcon icon={faClock} />
                   </div>
+                  <input
+                    type="number"
+                    id="shelfLife"
+                    name="shelfLife"
+                    value={specSheetData.productIdentification?.shelfLife || ''}
+                    onChange={handleInputChange}
+                    placeholder="Shelf life"
+                    min="0"
+                  />
+                  <select
+                    id="shelfLifeUnit"
+                    name="shelfLifeUnit"
+                    value={specSheetData.productIdentification?.shelfLifeUnit || 'months'}
+                    onChange={handleInputChange}
+                  >
+                    <option value="months">Months</option>
+                    <option value="years">Years</option>
+                  </select>
                 </div>
                 <span className="field-help">Product shelf life from date of manufacture</span>
               </div>
