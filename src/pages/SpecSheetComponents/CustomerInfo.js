@@ -57,9 +57,15 @@ const CustomerInfo = ({ specSheetData, setSpecSheetData }) => {
       // Upload to Supabase Storage
       const { data, error } = await supabase.storage
         .from('spec-sheet-assets')
-        .upload(`logos/${fileName}`, file);
+        .upload(`logos/${fileName}`, file, {
+          upsert: true,
+          cacheControl: '3600'
+        });
         
-      if (error) throw error;
+      if (error) {
+        console.error('Error uploading logo:', error);
+        throw error;
+      }
       
       // Get the public URL
       const { data: publicUrlData } = supabase.storage

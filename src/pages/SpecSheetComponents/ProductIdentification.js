@@ -1,20 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faTag, 
+  faPalette,
+  faFlask,
+  faSpinner,
+  faListAlt,
+  faRectangleList,
+  faSignature,
+  faTag,
+  faInfoCircle,
+  faWeightHanging,
+  faBarcode,
   faUpload, 
   faImage, 
   faTrash, 
   faExternalLinkAlt, 
-  faBarcode, 
-  faInfoCircle, 
   faCalendarAlt,
-  faWeightHanging,
   faBoxOpen,
-  faPalette,
-  faFlask,
-  faSpinner
+  faPallet,
+  faCalculator,
+  faCode,
+  faClock
 } from '@fortawesome/free-solid-svg-icons';
 
 const ProductIdentification = ({ specSheetData, setSpecSheetData }) => {
@@ -60,9 +67,15 @@ const ProductIdentification = ({ specSheetData, setSpecSheetData }) => {
       // Upload to Supabase Storage
       const { data: uploadData, error } = await supabase.storage
         .from('spec-sheet-assets')
-        .upload(`product-images/${fileName}`, file);
+        .upload(`product-images/${fileName}`, file, {
+          upsert: true,
+          cacheControl: '3600'
+        });
         
-      if (error) throw error;
+      if (error) {
+        console.error('Error uploading product image:', error);
+        throw error;
+      }
       
       // Get the public URL
       const { data: publicUrlData } = supabase.storage
@@ -148,18 +161,39 @@ const ProductIdentification = ({ specSheetData, setSpecSheetData }) => {
               Basic Product Information
             </div>
             
-            <div className="form-group">
-              <label htmlFor="productName" className="required-field">Product Name</label>
-              <input
-                type="text"
-                id="productName"
-                name="productName"
-                value={specSheetData.productIdentification?.productName || ''}
-                onChange={handleInputChange}
-                placeholder="Enter product name"
-                className="form-control"
-              />
-              <span className="field-help">The official name of the product as it will appear on packaging</span>
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="productName">Product Name</label>
+                <div className="input-with-icon">
+                  <FontAwesomeIcon icon={faSignature} className="input-icon" />
+                  <input
+                    type="text"
+                    id="productName"
+                    name="productName"
+                    value={specSheetData.productIdentification?.productName || ''}
+                    onChange={handleInputChange}
+                    placeholder="Enter product name"
+                    className="form-control"
+                  />
+                </div>
+                <span className="field-help">Full product name as it appears on packaging</span>
+              </div>
+              <div className="form-group">
+                <label htmlFor="sku">SKU</label>
+                <div className="input-with-icon">
+                  <FontAwesomeIcon icon={faBarcode} className="input-icon" />
+                  <input
+                    type="text"
+                    id="sku"
+                    name="sku"
+                    value={specSheetData.productIdentification?.sku || ''}
+                    onChange={handleInputChange}
+                    placeholder="Enter SKU"
+                    className="form-control"
+                  />
+                </div>
+                <span className="field-help">Stock Keeping Unit identifier</span>
+              </div>
             </div>
             
             <div className="form-row">
@@ -195,6 +229,88 @@ const ProductIdentification = ({ specSheetData, setSpecSheetData }) => {
               </div>
             </div>
             
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="netWeight">Packaging Claim Weight</label>
+                <div className="input-with-icon">
+                  <FontAwesomeIcon icon={faWeightHanging} className="input-icon" />
+                  <div className="input-group">
+                    <input
+                      type="number"
+                      id="netWeight"
+                      name="netWeight"
+                      value={specSheetData.productIdentification?.netWeight || ''}
+                      onChange={handleInputChange}
+                      className="form-control"
+                      placeholder="Enter weight"
+                      step="0.01"
+                      style={{
+                        borderTopRightRadius: 0,
+                        borderBottomRightRadius: 0,
+                        borderRight: 'none',
+                        flexGrow: 1
+                      }}
+                    />
+                    <select
+                      id="weightUom"
+                      name="weightUom"
+                      value={specSheetData.productIdentification?.weightUom || 'g'}
+                      onChange={handleInputChange}
+                      className="form-select"
+                      style={{
+                        borderTopLeftRadius: 0,
+                        borderBottomLeftRadius: 0,
+                        width: '70px',
+                        flexShrink: 0,
+                        borderLeft: 'none'
+                      }}
+                    >
+                      <option value="g">g</option>
+                      <option value="kg">kg</option>
+                      <option value="oz">oz</option>
+                      <option value="lbs">lbs</option>
+                    </select>
+                  </div>
+                </div>
+                <span className="field-help">Net weight as stated on packaging</span>
+              </div>
+            </div>
+            
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="bomId">BOM ID</label>
+                <div className="input-with-icon">
+                  <FontAwesomeIcon icon={faRectangleList} className="input-icon" />
+                  <input
+                    type="text"
+                    id="bomId"
+                    name="bomId"
+                    placeholder="Enter BOM ID"
+                    className="form-control"
+                    value={specSheetData.productIdentification?.bomId || ''}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <span className="field-help">Bill of Materials identifier</span>
+              </div>
+              <div className="form-group">
+                <label htmlFor="wipId">WIP ID</label>
+                <div className="input-with-icon">
+                  <FontAwesomeIcon icon={faFlask} className="input-icon" />
+                  <input
+                    type="text"
+                    id="wipId"
+                    name="wipId"
+                    value={specSheetData.productIdentification?.wipId || ''}
+                    onChange={handleInputChange}
+                    placeholder="Enter WIP ID"
+                    className="form-control"
+                  />
+                </div>
+                <span className="field-help">Work in Progress identifier</span>
+              </div>
+            </div>
+            
             <div className="form-group">
               <label htmlFor="description">Product Description</label>
               <textarea
@@ -212,39 +328,45 @@ const ProductIdentification = ({ specSheetData, setSpecSheetData }) => {
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="category">Product Category</label>
-                <select
-                  id="category"
-                  name="category"
-                  value={specSheetData.productIdentification?.category || ''}
-                  onChange={handleInputChange}
-                  className="form-select"
-                >
-                  <option value="">Select Category</option>
-                  <option value="Beverage">Beverage</option>
-                  <option value="Food">Food</option>
-                  <option value="Supplement">Supplement</option>
-                  <option value="Cosmetic">Cosmetic</option>
-                  <option value="Cleaning">Cleaning</option>
-                  <option value="Other">Other</option>
-                </select>
+                <div className="input-with-icon">
+                  <FontAwesomeIcon icon={faTag} className="input-icon" />
+                  <select
+                    id="category"
+                    name="category"
+                    value={specSheetData.productIdentification?.category || ''}
+                    onChange={handleInputChange}
+                    className="form-select"
+                  >
+                    <option value="">Select Category</option>
+                    <option value="Beverage">Beverage</option>
+                    <option value="Food">Food</option>
+                    <option value="Supplement">Supplement</option>
+                    <option value="Cosmetic">Cosmetic</option>
+                    <option value="Cleaning">Cleaning</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
                 <span className="field-help">General product classification</span>
               </div>
               
               <div className="form-group">
                 <label htmlFor="status">Product Status</label>
-                <select
-                  id="status"
-                  name="status"
-                  value={specSheetData.productIdentification?.status || ''}
-                  onChange={handleInputChange}
-                  className="form-select"
-                >
-                  <option value="">Select Status</option>
-                  <option value="Active">Active</option>
-                  <option value="In Development">In Development</option>
-                  <option value="Discontinued">Discontinued</option>
-                  <option value="Seasonal">Seasonal</option>
-                </select>
+                <div className="input-with-icon">
+                  <FontAwesomeIcon icon={faInfoCircle} className="input-icon" />
+                  <select
+                    id="status"
+                    name="status"
+                    value={specSheetData.productIdentification?.status || ''}
+                    onChange={handleInputChange}
+                    className="form-select"
+                  >
+                    <option value="">Select Status</option>
+                    <option value="Active">Active</option>
+                    <option value="In Development">In Development</option>
+                    <option value="Discontinued">Discontinued</option>
+                    <option value="Seasonal">Seasonal</option>
+                  </select>
+                </div>
                 <span className="field-help">Current status of this product</span>
               </div>
             </div>
@@ -317,194 +439,64 @@ const ProductIdentification = ({ specSheetData, setSpecSheetData }) => {
             </div>
             
             <div className="section-divider">
-              <span>Physical Properties</span>
-            </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="netWeight">Net Weight</label>
-                <div className="input-group">
-                  <input
-                    type="number"
-                    id="netWeight"
-                    name="netWeight"
-                    value={specSheetData.productIdentification?.netWeight || ''}
-                    onChange={handleInputChange}
-                    placeholder="Weight"
-                    min="0"
-                    step="0.01"
-                    className="form-control input-sm"
-                  />
-                  <select
-                    id="weightUnit"
-                    name="weightUnit"
-                    value={specSheetData.productIdentification?.weightUnit || 'oz'}
-                    onChange={handleInputChange}
-                    style={{ 
-                      width: '60px', 
-                      height: '34px', 
-                      fontSize: '13px',
-                      padding: '2px 4px',
-                      border: '1px solid #ccc',
-                      borderRadius: '4px'
-                    }}
-                  >
-                    <option value="oz">oz</option>
-                    <option value="lb">lb</option>
-                    <option value="g">g</option>
-                    <option value="kg">kg</option>
-                  </select>
-                </div>
-                <span className="field-help">Weight without packaging</span>
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="volume">Volume</label>
-                <div className="input-group">
-                  <input
-                    type="number"
-                    id="volume"
-                    name="volume"
-                    value={specSheetData.productIdentification?.volume || ''}
-                    onChange={handleInputChange}
-                    placeholder="Volume"
-                    min="0"
-                    step="0.01"
-                    className="form-control input-sm"
-                  />
-                  <select
-                    id="volumeUnit"
-                    name="volumeUnit"
-                    value={specSheetData.productIdentification?.volumeUnit || 'oz'}
-                    onChange={handleInputChange}
-                    style={{ 
-                      width: '60px', 
-                      height: '34px', 
-                      fontSize: '13px',
-                      padding: '2px 4px',
-                      border: '1px solid #ccc',
-                      borderRadius: '4px'
-                    }}
-                  >
-                    <option value="oz">fl oz</option>
-                    <option value="ml">ml</option>
-                    <option value="l">L</option>
-                    <option value="gal">gal</option>
-                  </select>
-                </div>
-                <span className="field-help">Liquid volume if applicable</span>
-              </div>
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="dimensions">Dimensions (L × W × H)</label>
-              <div className="dimensions-input">
-                <input
-                  type="number"
-                  id="length"
-                  name="length"
-                  value={specSheetData.productIdentification?.length || ''}
-                  onChange={handleInputChange}
-                  placeholder="L"
-                  min="0"
-                  step="0.1"
-                  className="form-control dimension-input input-sm"
-                />
-                <span className="dimension-separator">×</span>
-                <input
-                  type="number"
-                  id="width"
-                  name="width"
-                  value={specSheetData.productIdentification?.width || ''}
-                  onChange={handleInputChange}
-                  placeholder="W"
-                  min="0"
-                  step="0.1"
-                  className="form-control dimension-input input-sm"
-                />
-                <span className="dimension-separator">×</span>
-                <input
-                  type="number"
-                  id="height"
-                  name="height"
-                  value={specSheetData.productIdentification?.height || ''}
-                  onChange={handleInputChange}
-                  placeholder="H"
-                  min="0"
-                  step="0.1"
-                  className="form-control dimension-input input-sm"
-                />
-                <select
-                  id="dimensionUnit"
-                  name="dimensionUnit"
-                  value={specSheetData.productIdentification?.dimensionUnit || 'in'}
-                  onChange={handleInputChange}
-                  style={{ 
-                    width: '60px', 
-                    height: '34px', 
-                    fontSize: '13px',
-                    padding: '2px 4px',
-                    border: '1px solid #ccc',
-                    borderRadius: '4px'
-                  }}
-                >
-                  <option value="in">in</option>
-                  <option value="cm">cm</option>
-                  <option value="mm">mm</option>
-                </select>
-              </div>
-              <span className="field-help">Physical dimensions of the product</span>
-            </div>
-            
-            <div className="section-divider">
-              <span>Packaging Information</span>
+              <FontAwesomeIcon icon={faBoxOpen} className="section-icon" />
+              Packaging Information
             </div>
             
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="unitsPerCase">Units per Case</label>
-                <input
-                  type="number"
-                  id="unitsPerCase"
-                  name="unitsPerCase"
-                  value={specSheetData.productIdentification?.unitsPerCase || ''}
-                  onChange={handleUnitsPerCaseChange}
-                  placeholder="Enter units per case"
-                  min="1"
-                  step="1"
-                  className="form-control input-sm"
-                />
+                <div className="input-with-icon">
+                  <FontAwesomeIcon icon={faBoxOpen} className="input-icon" />
+                  <input
+                    type="number"
+                    id="unitsPerCase"
+                    name="unitsPerCase"
+                    value={specSheetData.productIdentification?.unitsPerCase || ''}
+                    onChange={handleUnitsPerCaseChange}
+                    placeholder="Enter units per case"
+                    min="1"
+                    step="1"
+                    className="form-control"
+                  />
+                </div>
                 <span className="field-help">Number of units in each case</span>
               </div>
               
               <div className="form-group">
                 <label htmlFor="casesPerPallet">Cases per Pallet</label>
-                <input
-                  type="number"
-                  id="casesPerPallet"
-                  name="casesPerPallet"
-                  value={specSheetData.productIdentification?.casesPerPallet || ''}
-                  onChange={handleCasesPerPalletChange}
-                  placeholder="Enter cases per pallet"
-                  min="1"
-                  step="1"
-                  className="form-control input-sm"
-                />
+                <div className="input-with-icon">
+                  <FontAwesomeIcon icon={faPallet} className="input-icon" />
+                  <input
+                    type="number"
+                    id="casesPerPallet"
+                    name="casesPerPallet"
+                    value={specSheetData.productIdentification?.casesPerPallet || ''}
+                    onChange={handleCasesPerPalletChange}
+                    placeholder="Enter cases per pallet"
+                    min="1"
+                    step="1"
+                    className="form-control"
+                  />
+                </div>
                 <span className="field-help">Number of cases on each pallet</span>
               </div>
             </div>
             
             <div className="form-group">
               <label htmlFor="unitsPerPallet">Units per Pallet</label>
-              <input
-                type="number"
-                id="unitsPerPallet"
-                name="unitsPerPallet"
-                value={specSheetData.productIdentification?.unitsPerPallet || ''}
-                readOnly
-                disabled
-                className="form-control calculated-field input-sm"
-              />
+              <div className="input-with-icon">
+                <FontAwesomeIcon icon={faCalculator} className="input-icon" />
+                <input
+                  type="number"
+                  id="unitsPerPallet"
+                  name="unitsPerPallet"
+                  value={specSheetData.productIdentification?.unitsPerPallet || ''}
+                  readOnly
+                  disabled
+                  className="form-control calculated-field"
+                />
+              </div>
               <span className="field-help">Auto-calculated from units per case × cases per pallet</span>
             </div>
             
@@ -515,51 +507,64 @@ const ProductIdentification = ({ specSheetData, setSpecSheetData }) => {
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="lotCodeFormat">Lot Code Format</label>
-                <input
-                  type="text"
-                  id="lotCodeFormat"
-                  name="lotCodeFormat"
-                  value={specSheetData.productIdentification?.lotCodeFormat || ''}
-                  onChange={handleInputChange}
-                  placeholder="e.g., NXL125058"
-                  className="form-control input-sm"
-                />
+                <div className="input-with-icon">
+                  <FontAwesomeIcon icon={faCode} className="input-icon" />
+                  <input
+                    type="text"
+                    id="lotCodeFormat"
+                    name="lotCodeFormat"
+                    value={specSheetData.productIdentification?.lotCodeFormat || ''}
+                    onChange={handleInputChange}
+                    placeholder="e.g., NXL125058"
+                    className="form-control"
+                  />
+                </div>
                 <span className="field-help">Format: Company Initials (NX) + Production Line (L1) + Year (25) + Julian Date (058)</span>
               </div>
               
               <div className="form-group">
                 <label htmlFor="shelfLife">Shelf Life</label>
-                <div className="input-group">
-                  <input
-                    type="number"
-                    id="shelfLife"
-                    name="shelfLife"
-                    value={specSheetData.productIdentification?.shelfLife || ''}
-                    onChange={handleInputChange}
-                    placeholder="Shelf life"
-                    min="0"
-                    className="form-control input-sm"
-                  />
-                  <select
-                    id="shelfLifeUnit"
-                    name="shelfLifeUnit"
-                    value={specSheetData.productIdentification?.shelfLifeUnit || 'months'}
-                    onChange={handleInputChange}
-                    style={{ 
-                      width: '75px', 
-                      height: '34px', 
-                      fontSize: '13px',
-                      padding: '2px 4px',
-                      border: '1px solid #ccc',
-                      borderRadius: '4px'
-                    }}
-                  >
-                    <option value="days">Days</option>
-                    <option value="months">Months</option>
-                    <option value="years">Years</option>
-                  </select>
+                <div className="input-with-icon">
+                  <FontAwesomeIcon icon={faClock} className="input-icon" />
+                  <div className="input-group">
+                    <input
+                      type="number"
+                      id="shelfLife"
+                      name="shelfLife"
+                      value={specSheetData.productIdentification?.shelfLife || ''}
+                      onChange={handleInputChange}
+                      placeholder="Shelf life"
+                      min="0"
+                      className="form-control"
+                      style={{
+                        borderTopRightRadius: 0,
+                        borderBottomRightRadius: 0,
+                        borderRight: 'none',
+                        flexGrow: 1
+                      }}
+                    />
+                    <select
+                      id="shelfLifeUnit"
+                      name="shelfLifeUnit"
+                      value={specSheetData.productIdentification?.shelfLifeUnit || ''}
+                      onChange={handleInputChange}
+                      className="form-select"
+                      style={{
+                        borderTopLeftRadius: 0,
+                        borderBottomLeftRadius: 0,
+                        width: '80px',
+                        flexShrink: 0,
+                        borderLeft: 'none'
+                      }}
+                    >
+                      <option value="days">Days</option>
+                      <option value="weeks">Weeks</option>
+                      <option value="months">Months</option>
+                      <option value="years">Years</option>
+                    </select>
+                  </div>
                 </div>
-                <span className="field-help">How long the product remains usable</span>
+                <span className="field-help">Product shelf life from date of manufacture</span>
               </div>
             </div>
           </div>

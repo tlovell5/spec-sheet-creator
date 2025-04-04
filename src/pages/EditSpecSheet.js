@@ -631,8 +631,17 @@ function EditSpecSheet() {
               </span>
             </div>
           </h3>
-          <span>{expandedSections.customerInfo ? '▼' : '►'}</span>
-          {getCompletionIcon('customerInfo')}
+          <div className="header-right">
+            <span className={`completion-indicator ${isSectionComplete('customerInfo') ? 'complete' : 'incomplete'}`}>
+              {isSectionComplete('customerInfo') ? (
+                <FontAwesomeIcon icon={faCheckCircle} />
+              ) : (
+                <FontAwesomeIcon icon={faExclamationCircle} />
+              )}
+              {isSectionComplete('customerInfo') ? 'Complete' : 'Incomplete'}
+            </span>
+            <span>{expandedSections.customerInfo ? '▼' : '►'}</span>
+          </div>
         </div>
         {expandedSections.customerInfo && (
           <div className="container-content">
@@ -663,8 +672,17 @@ function EditSpecSheet() {
               </span>
             </div>
           </h3>
-          <span>{expandedSections.productIdentification ? '▼' : '►'}</span>
-          {getCompletionIcon('productIdentification')}
+          <div className="header-right">
+            <span className={`completion-indicator ${isSectionComplete('productIdentification') ? 'complete' : 'incomplete'}`}>
+              {isSectionComplete('productIdentification') ? (
+                <FontAwesomeIcon icon={faCheckCircle} />
+              ) : (
+                <FontAwesomeIcon icon={faExclamationCircle} />
+              )}
+              {isSectionComplete('productIdentification') ? 'Complete' : 'Incomplete'}
+            </span>
+            <span>{expandedSections.productIdentification ? '▼' : '►'}</span>
+          </div>
         </div>
         {expandedSections.productIdentification && (
           <div className="container-content">
@@ -695,8 +713,17 @@ function EditSpecSheet() {
               </span>
             </div>
           </h3>
-          <span>{expandedSections.packagingClaims ? '▼' : '►'}</span>
-          {getCompletionIcon('packagingClaims')}
+          <div className="header-right">
+            <span className={`completion-indicator ${isSectionComplete('packagingClaims') ? 'complete' : 'incomplete'}`}>
+              {isSectionComplete('packagingClaims') ? (
+                <FontAwesomeIcon icon={faCheckCircle} />
+              ) : (
+                <FontAwesomeIcon icon={faExclamationCircle} />
+              )}
+              {isSectionComplete('packagingClaims') ? 'Complete' : 'Incomplete'}
+            </span>
+            <span>{expandedSections.packagingClaims ? '▼' : '►'}</span>
+          </div>
         </div>
         {expandedSections.packagingClaims && (
           <div className="container-content">
@@ -727,8 +754,17 @@ function EditSpecSheet() {
               </span>
             </div>
           </h3>
-          <span>{expandedSections.billOfMaterials ? '▼' : '►'}</span>
-          {getCompletionIcon('billOfMaterials')}
+          <div className="header-right">
+            <span className={`completion-indicator ${isSectionComplete('billOfMaterials') ? 'complete' : 'incomplete'}`}>
+              {isSectionComplete('billOfMaterials') ? (
+                <FontAwesomeIcon icon={faCheckCircle} />
+              ) : (
+                <FontAwesomeIcon icon={faExclamationCircle} />
+              )}
+              {isSectionComplete('billOfMaterials') ? 'Complete' : 'Incomplete'}
+            </span>
+            <span>{expandedSections.billOfMaterials ? '▼' : '►'}</span>
+          </div>
         </div>
         {expandedSections.billOfMaterials && (
           <div className="container-content">
@@ -759,8 +795,17 @@ function EditSpecSheet() {
               </span>
             </div>
           </h3>
-          <span>{expandedSections.productionDetails ? '▼' : '►'}</span>
-          {getCompletionIcon('productionDetails')}
+          <div className="header-right">
+            <span className={`completion-indicator ${isSectionComplete('productionDetails') ? 'complete' : 'incomplete'}`}>
+              {isSectionComplete('productionDetails') ? (
+                <FontAwesomeIcon icon={faCheckCircle} />
+              ) : (
+                <FontAwesomeIcon icon={faExclamationCircle} />
+              )}
+              {isSectionComplete('productionDetails') ? 'Complete' : 'Incomplete'}
+            </span>
+            <span>{expandedSections.productionDetails ? '▼' : '►'}</span>
+          </div>
         </div>
         {expandedSections.productionDetails && (
           <div className="container-content">
@@ -791,8 +836,17 @@ function EditSpecSheet() {
               </span>
             </div>
           </h3>
-          <span>{expandedSections.packoutDetails ? '▼' : '►'}</span>
-          {getCompletionIcon('packoutDetails')}
+          <div className="header-right">
+            <span className={`completion-indicator ${isSectionComplete('packoutDetails') ? 'complete' : 'incomplete'}`}>
+              {isSectionComplete('packoutDetails') ? (
+                <FontAwesomeIcon icon={faCheckCircle} />
+              ) : (
+                <FontAwesomeIcon icon={faExclamationCircle} />
+              )}
+              {isSectionComplete('packoutDetails') ? 'Complete' : 'Incomplete'}
+            </span>
+            <span>{expandedSections.packoutDetails ? '▼' : '►'}</span>
+          </div>
         </div>
         {expandedSections.packoutDetails && (
           <div className="container-content">
@@ -823,8 +877,17 @@ function EditSpecSheet() {
               </span>
             </div>
           </h3>
-          <span>{expandedSections.mixInstructions ? '▼' : '►'}</span>
-          {getCompletionIcon('mixInstructions')}
+          <div className="header-right">
+            <span className={`completion-indicator ${isSectionComplete('mixInstructions') ? 'complete' : 'incomplete'}`}>
+              {isSectionComplete('mixInstructions') ? (
+                <FontAwesomeIcon icon={faCheckCircle} />
+              ) : (
+                <FontAwesomeIcon icon={faExclamationCircle} />
+              )}
+              {isSectionComplete('mixInstructions') ? 'Complete' : 'Incomplete'}
+            </span>
+            <span>{expandedSections.mixInstructions ? '▼' : '►'}</span>
+          </div>
         </div>
         {expandedSections.mixInstructions && (
           <div className="container-content">
@@ -855,8 +918,17 @@ function EditSpecSheet() {
               </span>
             </div>
           </h3>
-          <span>{expandedSections.productTesting ? '▼' : '►'}</span>
-          {getCompletionIcon('productTesting')}
+          <div className="header-right">
+            <span className={`completion-indicator ${isSectionComplete('productTesting') ? 'complete' : 'incomplete'}`}>
+              {isSectionComplete('productTesting') ? (
+                <FontAwesomeIcon icon={faCheckCircle} />
+              ) : (
+                <FontAwesomeIcon icon={faExclamationCircle} />
+              )}
+              {isSectionComplete('productTesting') ? 'Complete' : 'Incomplete'}
+            </span>
+            <span>{expandedSections.productTesting ? '▼' : '►'}</span>
+          </div>
         </div>
         {expandedSections.productTesting && (
           <div className="container-content">
@@ -887,8 +959,17 @@ function EditSpecSheet() {
               </span>
             </div>
           </h3>
-          <span>{expandedSections.equipmentSpecs ? '▼' : '►'}</span>
-          {getCompletionIcon('equipmentSpecs')}
+          <div className="header-right">
+            <span className={`completion-indicator ${isSectionComplete('equipmentSpecs') ? 'complete' : 'incomplete'}`}>
+              {isSectionComplete('equipmentSpecs') ? (
+                <FontAwesomeIcon icon={faCheckCircle} />
+              ) : (
+                <FontAwesomeIcon icon={faExclamationCircle} />
+              )}
+              {isSectionComplete('equipmentSpecs') ? 'Complete' : 'Incomplete'}
+            </span>
+            <span>{expandedSections.equipmentSpecs ? '▼' : '►'}</span>
+          </div>
         </div>
         {expandedSections.equipmentSpecs && (
           <div className="container-content">
@@ -919,8 +1000,17 @@ function EditSpecSheet() {
               </span>
             </div>
           </h3>
-          <span>{expandedSections.signatures ? '▼' : '►'}</span>
-          {getCompletionIcon('signatures')}
+          <div className="header-right">
+            <span className={`completion-indicator ${isSectionComplete('signatures') ? 'complete' : 'incomplete'}`}>
+              {isSectionComplete('signatures') ? (
+                <FontAwesomeIcon icon={faCheckCircle} />
+              ) : (
+                <FontAwesomeIcon icon={faExclamationCircle} />
+              )}
+              {isSectionComplete('signatures') ? 'Complete' : 'Incomplete'}
+            </span>
+            <span>{expandedSections.signatures ? '▼' : '►'}</span>
+          </div>
         </div>
         {expandedSections.signatures && (
           <div className="container-content">
@@ -951,8 +1041,17 @@ function EditSpecSheet() {
               </span>
             </div>
           </h3>
-          <span>{expandedSections.activityLog ? '▼' : '►'}</span>
-          {getCompletionIcon('activityLog')}
+          <div className="header-right">
+            <span className={`completion-indicator ${isSectionComplete('activityLog') ? 'complete' : 'incomplete'}`}>
+              {isSectionComplete('activityLog') ? (
+                <FontAwesomeIcon icon={faCheckCircle} />
+              ) : (
+                <FontAwesomeIcon icon={faExclamationCircle} />
+              )}
+              {isSectionComplete('activityLog') ? 'Complete' : 'Incomplete'}
+            </span>
+            <span>{expandedSections.activityLog ? '▼' : '►'}</span>
+          </div>
         </div>
         {expandedSections.activityLog && (
           <div className="container-content">

@@ -127,7 +127,7 @@ function ProductionDetails({
   const handleChange = (field, value) => {
     const updatedDetails = { ...productionDetails, [field]: value };
     
-    // Recalculate net weight if packaging or inclusion weight changes
+    // Recalculate packaging claim weight if packaging or inclusion weight changes
     if (field === 'packaging_weight_g' || field === 'inclusion_weight_g') {
       const netWeight = 
         (updatedDetails.ingredient_weight_g || 0) + 
@@ -266,7 +266,7 @@ function ProductionDetails({
           />
         </div>
         <div className="form-group">
-          <label htmlFor="net_weight_g">Unit Net Weight (g)</label>
+          <label htmlFor="net_weight_g">Unit Packaging Claim Weight (g)</label>
           <input
             type="number"
             id="net_weight_g"

@@ -1,9 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faFlask,
+  faLeaf,
+  faCubes,
+  faPlus,
+  faTrash,
+  faBarcode,
+  faFileAlt,
+  faWineBottle,
+  faBoxes,
+  faCookie
+} from '@fortawesome/free-solid-svg-icons';
 
-function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom }) {
+function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom, specSheetData }) {
   // State for different tables
-  const [wipData, setWipData] = useState({ wip_id: wipId || '', weight: 0 });
+  const [wipData, setWipData] = useState({ wip_id: wipId || '', weight: 0, description: '' });
   const [ingredients, setIngredients] = useState([]);
   const [inclusions, setInclusions] = useState([]);
   const [packaging, setPackaging] = useState([]);
@@ -36,16 +49,16 @@ function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom }) {
         const packagingItems = data.filter(item => item.item_type === 'Packaging');
         const caseItems = data.filter(item => item.item_type === 'Case');
         
-        setIngredients(ingredientItems.length > 0 ? ingredientItems : [getEmptyIngredient()]);
-        setInclusions(inclusionItems.length > 0 ? inclusionItems : [getEmptyInclusion()]);
-        setPackaging(packagingItems.length > 0 ? packagingItems : [getEmptyPackaging()]);
-        setCaseItems(caseItems.length > 0 ? caseItems : [getEmptyCase()]);
+        setIngredients(ingredientItems.length > 0 ? ingredientItems : [createEmptyIngredient()]);
+        setInclusions(inclusionItems.length > 0 ? inclusionItems : [createEmptyInclusion()]);
+        setPackaging(packagingItems.length > 0 ? packagingItems : [createEmptyPackaging()]);
+        setCaseItems(caseItems.length > 0 ? caseItems : [createEmptyCase()]);
       } else {
         // Initialize with empty rows if no data
-        setIngredients([getEmptyIngredient()]);
-        setInclusions([getEmptyInclusion()]);
-        setPackaging([getEmptyPackaging()]);
-        setCaseItems([getEmptyCase()]);
+        setIngredients([createEmptyIngredient()]);
+        setInclusions([createEmptyInclusion()]);
+        setPackaging([createEmptyPackaging()]);
+        setCaseItems([createEmptyCase()]);
       }
     };
     
@@ -90,92 +103,99 @@ function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom }) {
   
   // Calculate totals for ingredients
   useEffect(() => {
-    // Calculate total percentage
-    const totalPct = ingredients.reduce((sum, item) => {
-      return sum + (Number(item.percentage) || 0);
-    }, 0);
+    const totalPct = calculateTotalPercentage();
+    const totalWt = calculateTotalWeight();
     
     setTotalPercentage(totalPct);
-    
-    // Calculate total weight
-    const totalWt = ingredients.reduce((sum, item) => {
-      return sum + (Number(item.weight) || 0);
-    }, 0);
-    
     setTotalWeight(totalWt);
   }, [ingredients]);
   
   // Helper functions to create empty rows
-  function getEmptyIngredient() {
+  const createEmptyIngredient = () => {
     return {
       id: `temp-${Math.random().toString(36).substring(2, 9)}`,
       spec_sheet_id: specSheetId,
       item_type: 'Ingredient',
-      sku: '',
+      itemCode: '',
       description: '',
       percentage: 0,
       weight: 0,
-      uom: 'lbs',
       allergens: '',
-      country_of_origin: ''
+      countryOfOrigin: ''
     };
-  }
+  };
   
-  function getEmptyInclusion() {
+  const createEmptyInclusion = () => {
     return {
       id: `temp-${Math.random().toString(36).substring(2, 9)}`,
       spec_sheet_id: specSheetId,
       item_type: 'Inclusion',
       sku: '',
       description: '',
-      qty: 0,
-      uom: 'ea',
-      weight_g: 0,
+      quantity: 0,
+      weight: 0,
       allergens: '',
-      country_of_origin: ''
+      countryOfOrigin: ''
     };
-  }
+  };
   
-  function getEmptyPackaging() {
+  const createEmptyPackaging = () => {
     return {
       id: `temp-${Math.random().toString(36).substring(2, 9)}`,
       spec_sheet_id: specSheetId,
       item_type: 'Packaging',
       sku: '',
       description: '',
-      length_in: 0,
-      width_in: 0,
-      height_in: 0,
       qty: 0,
-      weight_g: 0
+      weight: 0,
+      length: 0,
+      width: 0,
+      height: 0,
+      supplier: ''
     };
-  }
+  };
   
-  function getEmptyCase() {
+  const createEmptyCase = () => {
     return {
       id: `temp-${Math.random().toString(36).substring(2, 9)}`,
       spec_sheet_id: specSheetId,
       item_type: 'Case',
       sku: '',
       description: '',
-      length_in: 0,
-      width_in: 0,
-      height_in: 0,
       qty: 0,
-      weight_g: 0
+      weight: 0,
+      length: 0,
+      width: 0,
+      height: 0,
+      supplier: ''
     };
-  }
+  };
+  
+  // Calculate total percentage of ingredients
+  const calculateTotalPercentage = () => {
+    return ingredients.reduce((total, ingredient) => {
+      return total + (parseFloat(ingredient.percentage) || 0);
+    }, 0);
+  };
+
+  // Calculate total weight of ingredients
+  const calculateTotalWeight = () => {
+    return ingredients.reduce((total, ingredient) => {
+      return total + (parseFloat(ingredient.weight) || 0);
+    }, 0);
+  };
   
   // Handle changes to ingredient rows
   const handleIngredientChange = (index, field, value) => {
     const updatedIngredients = [...ingredients];
-    updatedIngredients[index][field] = value;
+    updatedIngredients[index] = {
+      ...updatedIngredients[index],
+      [field]: value
+    };
     
-    // If percentage changes, recalculate weight
+    // Recalculate weight based on percentage and packaging claim weight
     if (field === 'percentage') {
-      const percentage = Number(value) || 0;
-      const weight = (percentage / 100) * weightInLbs;
-      updatedIngredients[index].weight = weight.toFixed(4);
+      updatedIngredients[index].weight = calculateIngredientWeight(value);
     }
     
     setIngredients(updatedIngredients);
@@ -185,7 +205,10 @@ function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom }) {
   // Handle changes to inclusion rows
   const handleInclusionChange = (index, field, value) => {
     const updatedInclusions = [...inclusions];
-    updatedInclusions[index][field] = value;
+    updatedInclusions[index] = {
+      ...updatedInclusions[index],
+      [field]: value
+    };
     setInclusions(updatedInclusions);
     saveInclusion(updatedInclusions[index]);
   };
@@ -207,49 +230,49 @@ function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom }) {
   };
   
   // Add new rows
-  const addIngredient = () => {
-    setIngredients([...ingredients, getEmptyIngredient()]);
+  const handleAddIngredient = () => {
+    setIngredients([...ingredients, createEmptyIngredient()]);
   };
-  
+
   const addInclusion = () => {
-    setInclusions([...inclusions, getEmptyInclusion()]);
+    setInclusions([...inclusions, createEmptyInclusion()]);
   };
   
   const addPackaging = () => {
-    setPackaging([...packaging, getEmptyPackaging()]);
+    setPackaging([...packaging, createEmptyPackaging()]);
   };
   
   const addCase = () => {
-    setCaseItems([...caseItems, getEmptyCase()]);
+    setCaseItems([...caseItems, createEmptyCase()]);
   };
   
   // Remove rows
-  const removeIngredient = async (index) => {
-    const ingredientToRemove = ingredients[index];
-    const updatedIngredients = ingredients.filter((_, i) => i !== index);
+  const handleRemoveIngredient = (index) => {
+    const updatedIngredients = [...ingredients];
+    updatedIngredients.splice(index, 1);
     
     // Ensure we always have at least one row
     if (updatedIngredients.length === 0) {
-      updatedIngredients.push(getEmptyIngredient());
+      updatedIngredients.push(createEmptyIngredient());
     }
     
     setIngredients(updatedIngredients);
     
     // If it's a saved item (has a non-temp id), delete it from the database
-    if (ingredientToRemove.id && !ingredientToRemove.id.startsWith('temp-')) {
-      await supabase
+    if (ingredients[index].id && !ingredients[index].id.startsWith('temp-')) {
+      supabase
         .from('bill_of_materials')
         .delete()
-        .eq('id', ingredientToRemove.id);
+        .eq('id', ingredients[index].id);
     }
   };
-  
+
   const removeInclusion = async (index) => {
     const inclusionToRemove = inclusions[index];
     const updatedInclusions = inclusions.filter((_, i) => i !== index);
     
     if (updatedInclusions.length === 0) {
-      updatedInclusions.push(getEmptyInclusion());
+      updatedInclusions.push(createEmptyInclusion());
     }
     
     setInclusions(updatedInclusions);
@@ -267,7 +290,7 @@ function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom }) {
     const updatedPackaging = packaging.filter((_, i) => i !== index);
     
     if (updatedPackaging.length === 0) {
-      updatedPackaging.push(getEmptyPackaging());
+      updatedPackaging.push(createEmptyPackaging());
     }
     
     setPackaging(updatedPackaging);
@@ -285,7 +308,7 @@ function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom }) {
     const updatedCases = caseItems.filter((_, i) => i !== index);
     
     if (updatedCases.length === 0) {
-      updatedCases.push(getEmptyCase());
+      updatedCases.push(createEmptyCase());
     }
     
     setCaseItems(updatedCases);
@@ -430,52 +453,258 @@ function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom }) {
     }
   };
 
+  // Calculate ingredient weight based on percentage of packaging claim weight
+  const calculateIngredientWeight = (percentage) => {
+    if (!specSheetData?.productIdentification?.netWeight) return 0;
+    
+    const netWeight = parseFloat(specSheetData.productIdentification.netWeight) || 0;
+    const unit = specSheetData.productIdentification.weightUom || 'g';
+    const totalWeightLbs = convertToLbs(netWeight, unit);
+    
+    // Calculate weight based on percentage
+    const percentValue = parseFloat(percentage) || 0;
+    const weight = (percentValue / 100) * totalWeightLbs;
+    
+    return parseFloat(weight) || 0;
+  };
+
+  const convertToLbs = (weight, unit) => {
+    switch (unit) {
+      case 'g':
+        return weight / 453.592; // grams to lbs
+      case 'kg':
+        return weight * 2.20462; // kg to lbs
+      case 'oz':
+        return weight / 16; // oz to lbs
+      case 'lb':
+        // Already in lbs
+        return weight;
+      default:
+        return 0;
+    }
+  };
+
+  const handleWipDescriptionChange = (e) => {
+    setWipData(prev => ({ ...prev, description: e.target.value }));
+  };
+
   return (
     <div className="bill-of-materials-container">
+      <style>
+        {`
+          .bill-of-materials-container {
+            font-family: 'Roboto', sans-serif;
+            max-width: 100%;
+            padding: 0;
+            margin: 0;
+          }
+          
+          .bom-section {
+            margin-bottom: 1.5rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+          }
+          
+          .bom-section h4 {
+            background-color: #f8f9fa;
+            padding: 10px 12px;
+            margin: 0;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 1rem;
+            color: #495057;
+          }
+          
+          .form-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+          }
+          
+          .form-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            text-align: left;
+            padding: 8px 10px;
+            border-bottom: 2px solid #dee2e6;
+            color: #495057;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          
+          .form-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: middle;
+            font-size: 0.9rem;
+          }
+          
+          .form-table tr:last-child td {
+            border-bottom: none;
+          }
+          
+          .form-table input, .form-table select {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.85rem;
+          }
+          
+          .form-table input:focus, .form-table select:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.15rem rgba(0,123,255,.25);
+          }
+          
+          .add-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+          }
+          
+          .add-button:hover {
+            background-color: #218838;
+          }
+          
+          .remove-button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 3px 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+          }
+          
+          .remove-button:hover {
+            background-color: #c82333;
+          }
+          
+          .total-row td {
+            font-weight: bold;
+            background-color: #f8f9fa;
+          }
+        `}
+      </style>
       {/* WIP Table */}
       <div className="bom-section">
-        <h4>WIP</h4>
-        <table className="form-table">
+        <h4>
+          <span><FontAwesomeIcon icon={faFlask} /> Work in Progress (WIP)</span>
+        </h4>
+        <table className="form-table" style={{ width: '100%' }}>
           <thead>
             <tr>
-              <th>WIP ID</th>
-              <th>WIP Weight (lbs)</th>
+              <th style={{ width: '20%' }}>WIP ID</th>
+              <th style={{ width: '60%' }}>Description</th>
+              <th style={{ width: '20%' }}>Weight (lbs)</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>{wipData.wip_id || 'N/A'}</td>
-              <td>{wipData.weight ? wipData.weight.toFixed(4) : '0.0000'}</td>
+              <td>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={wipData.wip_id || ''}
+                  readOnly
+                />
+              </td>
+              <td>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={wipData.description}
+                  onChange={handleWipDescriptionChange}
+                  placeholder="Enter WIP description"
+                />
+              </td>
+              <td>
+                <input
+                  type="number"
+                  className="form-control calculated-field"
+                  value={(() => {
+                    try {
+                      // Direct calculation for display
+                      if (specSheetData?.productIdentification?.netWeight) {
+                        const netWeight = specSheetData.productIdentification.netWeight;
+                        const unit = specSheetData.productIdentification.weightUom || 'g';
+                        const convertedWeight = convertToLbs(netWeight, unit);
+                        return convertedWeight > 0 ? convertedWeight.toFixed(4) : '';
+                      } else if (wipData.weight) {
+                        return Number(wipData.weight).toFixed(4);
+                      } else {
+                        return '';
+                      }
+                    } catch (error) {
+                      console.error('Error converting weight:', error);
+                      return '';
+                    }
+                  })()}
+                  readOnly
+                />
+              </td>
             </tr>
           </tbody>
         </table>
+        <div className="table-notes">
+          <div className="table-note-row">
+            <div className="table-note-cell" style={{ width: '20%' }}></div>
+            <div className="table-note-cell" style={{ width: '60%' }}></div>
+            <div className="table-note-cell" style={{ width: '20%' }}>
+              <span className="field-help">Auto-calculated from Packaging Claim Weight</span>
+            </div>
+          </div>
+        </div>
       </div>
       
       {/* Ingredients Table */}
       <div className="bom-section">
-        <h4>Ingredients</h4>
+        <h4>
+          <span><FontAwesomeIcon icon={faLeaf} /> Ingredients</span>
+          <button 
+            className="add-button"
+            onClick={handleAddIngredient}
+          >
+            <FontAwesomeIcon icon={faPlus} /> Add
+          </button>
+        </h4>
         <table className="form-table">
           <thead>
             <tr>
-              <th>SKU</th>
-              <th>Description</th>
-              <th>%</th>
-              <th>Weight (lbs)</th>
-              <th>UOM</th>
-              <th>Allergens</th>
-              <th>Country of Origin</th>
-              <th>Actions</th>
+              <th style={{ width: '5%' }}>#</th>
+              <th style={{ width: '15%' }}>Item Code</th>
+              <th style={{ width: '30%' }}>Description</th>
+              <th style={{ width: '10%' }}>%</th>
+              <th style={{ width: '10%' }}>Weight (lbs)</th>
+              <th style={{ width: '15%' }}>Allergens</th>
+              <th style={{ width: '10%' }}>Country of Origin</th>
+              <th style={{ width: '5%' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {ingredients.map((ingredient, index) => (
-              <tr key={ingredient.id || index}>
+              <tr key={index}>
+                <td>{index + 1}</td>
                 <td>
                   <input
                     type="text"
                     className="form-control"
-                    value={ingredient.sku || ''}
-                    onChange={(e) => handleIngredientChange(index, 'sku', e.target.value)}
+                    value={ingredient.itemCode || ''}
+                    onChange={(e) => handleIngredientChange(index, 'itemCode', e.target.value)}
                   />
                 </td>
                 <td>
@@ -490,8 +719,8 @@ function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom }) {
                   <input
                     type="number"
                     className="form-control"
-                    value={ingredient.percentage || ''}
-                    onChange={(e) => handleIngredientChange(index, 'percentage', e.target.value)}
+                    value={ingredient.percentage > 0 ? ingredient.percentage : ''}
+                    onChange={(e) => handleIngredientChange(index, 'percentage', parseFloat(e.target.value))}
                     step="0.01"
                   />
                 </td>
@@ -499,11 +728,10 @@ function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom }) {
                   <input
                     type="number"
                     className="form-control"
-                    value={ingredient.weight || ''}
+                    value={ingredient.weight > 0 ? ingredient.weight.toFixed(4) : ''}
                     readOnly
                   />
                 </td>
-                <td>lbs</td>
                 <td>
                   <input
                     type="text"
@@ -516,33 +744,33 @@ function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom }) {
                   <input
                     type="text"
                     className="form-control"
-                    value={ingredient.country_of_origin || ''}
-                    onChange={(e) => handleIngredientChange(index, 'country_of_origin', e.target.value)}
+                    value={ingredient.countryOfOrigin || ''}
+                    onChange={(e) => handleIngredientChange(index, 'countryOfOrigin', e.target.value)}
                   />
                 </td>
                 <td>
                   <button 
-                    className="remove-row-button"
-                    onClick={() => removeIngredient(index)}
+                    className="remove-button"
+                    onClick={() => handleRemoveIngredient(index)}
                   >
-                    X
+                    <FontAwesomeIcon icon={faTrash} />
                   </button>
                 </td>
               </tr>
             ))}
             <tr className="total-row">
-              <td colSpan="2"><strong>Total</strong></td>
+              <td colSpan="3"><strong>Total:</strong></td>
               <td>
                 <strong 
                   className={totalPercentage !== 100 ? 'error-text' : ''}
                 >
-                  {totalPercentage.toFixed(2)}%
+                  {totalPercentage > 0 ? totalPercentage.toFixed(2) : '0'}%
                 </strong>
               </td>
               <td>
-                <strong>{totalWeight.toFixed(4)}</strong>
+                <strong>{totalWeight > 0 ? totalWeight.toFixed(4) : '0'} lbs</strong>
               </td>
-              <td colSpan="4"></td>
+              <td colSpan="3"></td>
             </tr>
           </tbody>
         </table>
@@ -552,34 +780,36 @@ function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom }) {
             Total percentage must equal 100%. Current total: {totalPercentage.toFixed(2)}%
           </div>
         )}
-        
-        <button 
-          className="add-row-button"
-          onClick={addIngredient}
-        >
-          Add Ingredient
-        </button>
       </div>
       
       {/* Inclusions Table */}
       <div className="bom-section">
-        <h4>Inclusions</h4>
+        <h4>
+          <span><FontAwesomeIcon icon={faCookie} /> Inclusions</span>
+          <button 
+            className="add-button"
+            onClick={addInclusion}
+          >
+            <FontAwesomeIcon icon={faPlus} /> Add
+          </button>
+        </h4>
         <table className="form-table">
           <thead>
             <tr>
-              <th>SKU</th>
-              <th>Description</th>
-              <th>QTY</th>
-              <th>UOM</th>
-              <th>Weight (g)</th>
-              <th>Allergens</th>
-              <th>Country of Origin</th>
-              <th>Actions</th>
+              <th style={{ width: '5%' }}>#</th>
+              <th style={{ width: '15%' }}>Item Code</th>
+              <th style={{ width: '25%' }}>Description</th>
+              <th style={{ width: '10%' }}>QTY (ea)</th>
+              <th style={{ width: '10%' }}>Weight (g)</th>
+              <th style={{ width: '15%' }}>Allergens</th>
+              <th style={{ width: '15%' }}>Country of Origin</th>
+              <th style={{ width: '5%' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {inclusions.map((inclusion, index) => (
-              <tr key={inclusion.id || index}>
+              <tr key={index}>
+                <td>{index + 1}</td>
                 <td>
                   <input
                     type="text"
@@ -600,17 +830,18 @@ function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom }) {
                   <input
                     type="number"
                     className="form-control"
-                    value={inclusion.qty || ''}
-                    onChange={(e) => handleInclusionChange(index, 'qty', e.target.value)}
+                    value={inclusion.quantity > 0 ? inclusion.quantity : ''}
+                    onChange={(e) => handleInclusionChange(index, 'quantity', parseFloat(e.target.value))}
+                    step="0.01"
                   />
                 </td>
-                <td>ea</td>
                 <td>
                   <input
                     type="number"
                     className="form-control"
-                    value={inclusion.weight_g || ''}
-                    onChange={(e) => handleInclusionChange(index, 'weight_g', e.target.value)}
+                    value={inclusion.weight > 0 ? inclusion.weight : ''}
+                    onChange={(e) => handleInclusionChange(index, 'weight', parseFloat(e.target.value))}
+                    step="0.01"
                   />
                 </td>
                 <td>
@@ -625,50 +856,52 @@ function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom }) {
                   <input
                     type="text"
                     className="form-control"
-                    value={inclusion.country_of_origin || ''}
-                    onChange={(e) => handleInclusionChange(index, 'country_of_origin', e.target.value)}
+                    value={inclusion.countryOfOrigin || ''}
+                    onChange={(e) => handleInclusionChange(index, 'countryOfOrigin', e.target.value)}
                   />
                 </td>
                 <td>
                   <button 
-                    className="remove-row-button"
+                    className="remove-button"
                     onClick={() => removeInclusion(index)}
                   >
-                    X
+                    <FontAwesomeIcon icon={faTrash} />
                   </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        
-        <button 
-          className="add-row-button"
-          onClick={addInclusion}
-        >
-          Add Inclusion
-        </button>
       </div>
       
       {/* Packaging Table */}
       <div className="bom-section">
-        <h4>Packaging</h4>
+        <h4>
+          <span><FontAwesomeIcon icon={faWineBottle} /> Packaging</span>
+          <button 
+            className="add-button"
+            onClick={addPackaging}
+          >
+            <FontAwesomeIcon icon={faPlus} /> Add
+          </button>
+        </h4>
         <table className="form-table">
           <thead>
             <tr>
-              <th>SKU</th>
-              <th>Description</th>
-              <th>Length (in)</th>
-              <th>Width (in)</th>
-              <th>Height (in)</th>
-              <th>QTY (ea)</th>
-              <th>Weight (g)</th>
-              <th>Actions</th>
+              <th style={{ width: '5%' }}>#</th>
+              <th style={{ width: '15%' }}>Item Code</th>
+              <th style={{ width: '30%' }}>Description</th>
+              <th style={{ width: '10%' }}>QTY (ea)</th>
+              <th style={{ width: '10%' }}>Weight (g)</th>
+              <th colSpan="3" style={{ width: '30%' }}>Dimensions (in)</th>
+              <th style={{ width: '10%' }}>Supplier</th>
+              <th style={{ width: '5%' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {packaging.map((item, index) => (
-              <tr key={item.id || index}>
+              <tr key={index}>
+                <td>{index + 1}</td>
                 <td>
                   <input
                     type="text"
@@ -689,8 +922,18 @@ function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom }) {
                   <input
                     type="number"
                     className="form-control"
-                    value={item.length_in || ''}
-                    onChange={(e) => handlePackagingChange(index, 'length_in', e.target.value)}
+                    value={item.qty > 0 ? item.qty : ''}
+                    onChange={(e) => handlePackagingChange(index, 'qty', parseFloat(e.target.value))}
+                    step="1"
+                    min="1"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={item.weight > 0 ? item.weight : ''}
+                    onChange={(e) => handlePackagingChange(index, 'weight', parseFloat(e.target.value))}
                     step="0.01"
                   />
                 </td>
@@ -698,76 +941,81 @@ function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom }) {
                   <input
                     type="number"
                     className="form-control"
-                    value={item.width_in || ''}
-                    onChange={(e) => handlePackagingChange(index, 'width_in', e.target.value)}
+                    value={item.length > 0 ? item.length : ''}
+                    onChange={(e) => handlePackagingChange(index, 'length', parseFloat(e.target.value))}
                     step="0.01"
+                    placeholder="L"
                   />
                 </td>
                 <td>
                   <input
                     type="number"
                     className="form-control"
-                    value={item.height_in || ''}
-                    onChange={(e) => handlePackagingChange(index, 'height_in', e.target.value)}
+                    value={item.width > 0 ? item.width : ''}
+                    onChange={(e) => handlePackagingChange(index, 'width', parseFloat(e.target.value))}
                     step="0.01"
+                    placeholder="W"
                   />
                 </td>
                 <td>
                   <input
                     type="number"
                     className="form-control"
-                    value={item.qty || ''}
-                    onChange={(e) => handlePackagingChange(index, 'qty', e.target.value)}
+                    value={item.height > 0 ? item.height : ''}
+                    onChange={(e) => handlePackagingChange(index, 'height', parseFloat(e.target.value))}
+                    step="0.01"
+                    placeholder="H"
                   />
                 </td>
                 <td>
                   <input
-                    type="number"
+                    type="text"
                     className="form-control"
-                    value={item.weight_g || ''}
-                    onChange={(e) => handlePackagingChange(index, 'weight_g', e.target.value)}
+                    value={item.supplier || ''}
+                    onChange={(e) => handlePackagingChange(index, 'supplier', e.target.value)}
                   />
                 </td>
                 <td>
                   <button 
-                    className="remove-row-button"
+                    className="remove-button"
                     onClick={() => removePackaging(index)}
                   >
-                    X
+                    <FontAwesomeIcon icon={faTrash} />
                   </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        
-        <button 
-          className="add-row-button"
-          onClick={addPackaging}
-        >
-          Add Packaging
-        </button>
       </div>
       
       {/* Case Table */}
       <div className="bom-section">
-        <h4>Case</h4>
+        <h4>
+          <span>
+            <FontAwesomeIcon icon={faBoxes} /> Case
+          </span>
+          <button className="add-button" onClick={addCase}>
+            <FontAwesomeIcon icon={faPlus} /> Add
+          </button>
+        </h4>
         <table className="form-table">
           <thead>
             <tr>
-              <th>SKU</th>
-              <th>Description</th>
-              <th>Length (in)</th>
-              <th>Width (in)</th>
-              <th>Height (in)</th>
-              <th>QTY (ea)</th>
-              <th>Weight (g)</th>
-              <th>Actions</th>
+              <th style={{ width: '5%' }}>#</th>
+              <th style={{ width: '15%' }}>Item Code</th>
+              <th style={{ width: '30%' }}>Description</th>
+              <th style={{ width: '10%' }}>QTY (ea)</th>
+              <th style={{ width: '10%' }}>Weight (g)</th>
+              <th colSpan="3" style={{ width: '30%' }}>Dimensions (in)</th>
+              <th style={{ width: '10%' }}>Supplier</th>
+              <th style={{ width: '5%' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {caseItems.map((item, index) => (
-              <tr key={item.id || index}>
+              <tr key={index}>
+                <td>{index + 1}</td>
                 <td>
                   <input
                     type="text"
@@ -777,23 +1025,29 @@ function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom }) {
                   />
                 </td>
                 <td>
-                  <select
+                  <input
+                    type="text"
                     className="form-control"
                     value={item.description || ''}
                     onChange={(e) => handleCaseChange(index, 'description', e.target.value)}
-                  >
-                    <option value="">Select Type</option>
-                    <option value="Box">Box</option>
-                    <option value="Tray">Tray</option>
-                    <option value="Divider">Divider</option>
-                  </select>
+                  />
                 </td>
                 <td>
                   <input
                     type="number"
                     className="form-control"
-                    value={item.length_in || ''}
-                    onChange={(e) => handleCaseChange(index, 'length_in', e.target.value)}
+                    value={item.qty > 0 ? item.qty : ''}
+                    onChange={(e) => handleCaseChange(index, 'qty', parseFloat(e.target.value))}
+                    step="1"
+                    min="1"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={item.weight > 0 ? item.weight : ''}
+                    onChange={(e) => handleCaseChange(index, 'weight', parseFloat(e.target.value))}
                     step="0.01"
                   />
                 </td>
@@ -801,55 +1055,52 @@ function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom }) {
                   <input
                     type="number"
                     className="form-control"
-                    value={item.width_in || ''}
-                    onChange={(e) => handleCaseChange(index, 'width_in', e.target.value)}
+                    value={item.length > 0 ? item.length : ''}
+                    onChange={(e) => handleCaseChange(index, 'length', parseFloat(e.target.value))}
                     step="0.01"
+                    placeholder="L"
                   />
                 </td>
                 <td>
                   <input
                     type="number"
                     className="form-control"
-                    value={item.height_in || ''}
-                    onChange={(e) => handleCaseChange(index, 'height_in', e.target.value)}
+                    value={item.width > 0 ? item.width : ''}
+                    onChange={(e) => handleCaseChange(index, 'width', parseFloat(e.target.value))}
                     step="0.01"
+                    placeholder="W"
                   />
                 </td>
                 <td>
                   <input
                     type="number"
                     className="form-control"
-                    value={item.qty || ''}
-                    onChange={(e) => handleCaseChange(index, 'qty', e.target.value)}
+                    value={item.height > 0 ? item.height : ''}
+                    onChange={(e) => handleCaseChange(index, 'height', parseFloat(e.target.value))}
+                    step="0.01"
+                    placeholder="H"
                   />
                 </td>
                 <td>
                   <input
-                    type="number"
+                    type="text"
                     className="form-control"
-                    value={item.weight_g || ''}
-                    onChange={(e) => handleCaseChange(index, 'weight_g', e.target.value)}
+                    value={item.supplier || ''}
+                    onChange={(e) => handleCaseChange(index, 'supplier', e.target.value)}
                   />
                 </td>
                 <td>
                   <button 
-                    className="remove-row-button"
+                    className="remove-button"
                     onClick={() => removeCase(index)}
                   >
-                    X
+                    <FontAwesomeIcon icon={faTrash} />
                   </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        
-        <button 
-          className="add-row-button"
-          onClick={addCase}
-        >
-          Add Case Item
-        </button>
       </div>
     </div>
   );
