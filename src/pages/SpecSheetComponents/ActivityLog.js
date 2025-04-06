@@ -1,5 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faHistory, 
+  faPlus, 
+  faEdit, 
+  faCheck, 
+  faTimes, 
+  faSignature, 
+  faEye, 
+  faCalendarAlt,
+  faUserClock,
+  faClipboardCheck
+} from '@fortawesome/free-solid-svg-icons';
 
 function ActivityLog({ specSheetId }) {
   const [activities, setActivities] = useState([]);
@@ -104,24 +117,57 @@ function ActivityLog({ specSheetId }) {
     }
   };
 
+  // Get icon for action
+  const getActionIcon = (action) => {
+    switch (action) {
+      case 'CREATED':
+        return faPlus;
+      case 'UPDATED':
+        return faEdit;
+      case 'APPROVED':
+        return faCheck;
+      case 'REJECTED':
+        return faTimes;
+      case 'SIGNED':
+        return faSignature;
+      case 'REQUESTED_REVIEW':
+        return faEye;
+      default:
+        return faHistory;
+    }
+  };
+
   return (
     <div className="activity-log-container">
-      <h4>Activity History</h4>
+      <h4>
+        <FontAwesomeIcon icon={faHistory} /> Activity History
+      </h4>
       
       {loading ? (
-        <p>Loading activity logs...</p>
+        <div className="activity-loading">
+          <div className="uploading-spinner"></div>
+          <p>Loading activity logs...</p>
+        </div>
       ) : activities.length === 0 ? (
-        <p>No activity logs found for this spec sheet.</p>
+        <div className="activity-empty">
+          <FontAwesomeIcon icon={faClipboardCheck} className="activity-empty-icon" />
+          <div className="activity-empty-text">No activity logs found for this spec sheet.</div>
+        </div>
       ) : (
         <div className="activity-log">
           {activities.map((activity) => (
             <div key={activity.id} className="activity-item">
               <div className="activity-timestamp">
+                <FontAwesomeIcon icon={faCalendarAlt} style={{ marginRight: '5px', opacity: 0.7 }} />
                 {formatDate(activity.timestamp)}
               </div>
               <div>
-                <span className="activity-user">{activity.user_id || 'System'}</span>
+                <span className="activity-user">
+                  <FontAwesomeIcon icon={faUserClock} style={{ marginRight: '5px' }} />
+                  {activity.user_id || 'System'}
+                </span>
                 <span className={`activity-action ${getActionClass(activity.action)}`}>
+                  <FontAwesomeIcon icon={getActionIcon(activity.action)} style={{ marginRight: '5px' }} />
                   {formatAction(activity.action)}
                 </span>
                 {activity.notes && (

@@ -1,7 +1,19 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSignature, faUpload, faTrash, faPen, faEnvelope, faCheck, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faSignature, 
+  faUpload, 
+  faTrash, 
+  faPen, 
+  faEnvelope, 
+  faCheck, 
+  faSpinner, 
+  faInfoCircle, 
+  faUser, 
+  faUserTie, 
+  faUserCog
+} from '@fortawesome/free-solid-svg-icons';
 
 function Signatures({ specSheetId }) {
   const [signatures, setSignatures] = useState({
@@ -25,6 +37,11 @@ function Signatures({ specSheetId }) {
   const [uploadError, setUploadError] = useState('');
   const [requestStatus, setRequestStatus] = useState('');
   const emailInputRef = useRef(null);
+  
+  // Fetch signatures when component mounts
+  useEffect(() => {
+    fetchSignatures();
+  }, [specSheetId]);
   
   const handleInputChange = (e, role) => {
     const { name, value } = e.target;
@@ -95,9 +112,12 @@ function Signatures({ specSheetId }) {
       [role]: {
         ...prev[role],
         signature_image_url: '',
-        signed_at: ''
+        signed_at: null
       }
     }));
+    
+    // Save the update to the database
+    saveSignature(role);
   };
   
   const handleRequestSignature = async (role) => {
@@ -274,33 +294,54 @@ function Signatures({ specSheetId }) {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
+  // Get the appropriate icon for each role
+  const getRoleIcon = (role) => {
+    switch (role) {
+      case 'customer':
+        return faUser;
+      case 'quality_manager':
+        return faUserTie;
+      case 'production_manager':
+        return faUserCog;
+      default:
+        return faUser;
+    }
+  };
+
   const renderSignatureBlock = (role, title) => {
     const signatureData = signatures[role];
     
     return (
-      <div className="signature-item">
-        <div className="signature-header">{title}</div>
-        
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor={`${role}-name`}>Name</label>
-            <input
-              type="text"
-              id={`${role}-name`}
-              name="signed_by"
-              value={signatureData.signed_by || ''}
-              onChange={(e) => handleInputChange(e, role)}
-              placeholder="Enter name"
-            />
-          </div>
-          <div className="form-group">
-            <label>Date Signed</label>
-            <div>{formatDate(signatureData.signed_at)}</div>
-          </div>
+      <div className="signature-card">
+        <div className="signature-header">
+          <span>
+            <FontAwesomeIcon icon={getRoleIcon(role)} /> {title}
+          </span>
+          {signatureData.signature_image_url && (
+            <FontAwesomeIcon icon={faCheck} style={{ color: 'var(--success-color)' }} />
+          )}
         </div>
         
-        {signatureData.signature_image_url ? (
-          <div className="image-preview-container">
+        <div className="signature-content">
+          <div className="signature-form">
+            <div className="signature-field">
+              <label className="signature-label">Name</label>
+              <input
+                type="text"
+                className="signature-input"
+                name="signed_by"
+                value={signatureData.signed_by || ''}
+                onChange={(e) => handleInputChange(e, role)}
+                placeholder="Enter name"
+              />
+            </div>
+            <div className="signature-field">
+              <label className="signature-label">Date Signed</label>
+              <div className="signature-date">{formatDate(signatureData.signed_at)}</div>
+            </div>
+          </div>
+          
+          {signatureData.signature_image_url ? (
             <div className="signature-preview">
               <img src={signatureData.signature_image_url} alt={`${title} Signature`} />
               
@@ -311,70 +352,80 @@ function Signatures({ specSheetId }) {
                 </div>
               )}
               
-              <div className="image-actions">
-                <button 
-                  className="image-action-button delete" 
-                  onClick={() => handleRemoveSignature(role)}
-                  title="Remove Signature"
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </button>
+              <button 
+                className="signature-remove-btn"
+                onClick={() => handleRemoveSignature(role)}
+                title="Remove Signature"
+              >
+                <FontAwesomeIcon icon={faTrash} />
+              </button>
+              
+              <div className="signature-caption">
+                Signed on {new Date(signatureData.signed_at).toLocaleDateString()}
               </div>
             </div>
-            <div className="image-caption">
-              Signed on {new Date(signatureData.signed_at).toLocaleDateString()}
-            </div>
-          </div>
-        ) : (
-          <div className="signature-actions">
-            <div className="file-upload">
-              <label className="file-upload-input">
-                <FontAwesomeIcon icon={faPen} /> 
-                <span>Upload signature</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleSignatureUpload(e, role)}
-                  style={{ display: 'none' }}
-                />
-              </label>
-            </div>
-            
-            <div className="signature-request">
-              <div className="request-form">
-                <input
-                  type="email"
-                  ref={emailInputRef}
-                  placeholder="Enter email to request signature"
-                  className="form-control"
-                />
-                <button 
-                  className="btn btn-primary" 
-                  onClick={() => handleRequestSignature(role)}
-                  disabled={false}
-                >
-                  <FontAwesomeIcon icon={faEnvelope} /> Request Signature
-                </button>
+          ) : (
+            <div className="signature-actions">
+              <div className="signature-upload">
+                <div className="signature-upload-btn">
+                  <FontAwesomeIcon icon={faPen} className="signature-upload-icon" />
+                  <span>Upload signature</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleSignatureUpload(e, role)}
+                    disabled={uploading[role]}
+                  />
+                </div>
+                {uploading[role] && (
+                  <div className="uploading-text" style={{ textAlign: 'center', marginTop: '8px' }}>
+                    Uploading...
+                  </div>
+                )}
               </div>
-              {requestStatus && <div className="request-status">{requestStatus}</div>}
+              
+              <div className="signature-request">
+                <div className="request-form">
+                  <input
+                    type="email"
+                    ref={emailInputRef}
+                    placeholder="Enter email to request signature"
+                    className="request-input"
+                  />
+                  <button 
+                    className="request-btn" 
+                    onClick={() => handleRequestSignature(role)}
+                  >
+                    <FontAwesomeIcon icon={faEnvelope} /> Request
+                  </button>
+                </div>
+                {requestStatus && <div className="request-status">{requestStatus}</div>}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     );
   };
 
   return (
     <div className="signatures-container">
-      <p className="signatures-info">
+      <div className="signatures-info">
+        <FontAwesomeIcon icon={faInfoCircle} style={{ marginRight: '8px' }} />
         All required signatures must be collected before the spec sheet can be approved.
-      </p>
+      </div>
       
-      <div className="signature-container">
+      <div className="signature-grid">
         {renderSignatureBlock('customer', 'Customer Signature')}
         {renderSignatureBlock('quality_manager', 'Quality Manager Signature')}
         {renderSignatureBlock('production_manager', 'Production Manager Signature')}
       </div>
+      
+      {uploadError && (
+        <div className="error-message" style={{ color: 'var(--danger-color)', marginTop: '16px' }}>
+          {uploadError}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faInfoCircle, 
+  faWeight, 
+  faImage, 
+  faUpload, 
+  faBarcode, 
+  faCalendarAlt, 
+  faCode, 
+  faBoxOpen, 
+  faLeaf, 
+  faLayerGroup, 
+  faTag
+} from '@fortawesome/free-solid-svg-icons';
 
 function ProductionDetails({ 
   specSheetId, 
@@ -204,172 +218,277 @@ function ProductionDetails({
 
   return (
     <div className="production-details-container">
-      <h3 className="production-section-title">Product Information</h3>
-      <div className="form-row">
-        <div className="form-group">
-          <label>Unit UPC</label>
-          <input
-            type="text"
-            className="form-control"
-            value={unitUpc || ''}
-            disabled
-          />
-        </div>
-        <div className="form-group">
-          <label>Lot Code Format</label>
-          <input
-            type="text"
-            className="form-control"
-            value={lotCodeFormat || ''}
-            disabled
-          />
-        </div>
-        <div className="form-group">
-          <label>Shelf Life</label>
-          <input
-            type="text"
-            className="form-control"
-            value={`${shelfLifeYears || 0} years, ${shelfLifeMonths || 0} months`}
-            disabled
-          />
-        </div>
-      </div>
-      
-      <h3 className="production-section-title">Weight Information</h3>
-      <div className="form-row">
-        <div className="form-group">
-          <label htmlFor="packaging_weight_g">Packaging Weight (g)</label>
-          <input
-            type="number"
-            id="packaging_weight_g"
-            className="form-control"
-            value={productionDetails.packaging_weight_g || ''}
-            onChange={(e) => handleChange('packaging_weight_g', Number(e.target.value))}
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="inclusion_weight_g">Inclusion Weight (g)</label>
-          <input
-            type="number"
-            id="inclusion_weight_g"
-            className="form-control"
-            value={productionDetails.inclusion_weight_g || ''}
-            onChange={(e) => handleChange('inclusion_weight_g', Number(e.target.value))}
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="ingredient_weight_g">Ingredient Weight (g)</label>
-          <input
-            type="number"
-            id="ingredient_weight_g"
-            className="form-control calculated-field"
-            value={productionDetails.ingredient_weight_g || ''}
-            disabled
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="net_weight_g">Unit Packaging Claim Weight (g)</label>
-          <input
-            type="number"
-            id="net_weight_g"
-            className="form-control calculated-field"
-            value={productionDetails.net_weight_g || ''}
-            disabled
-          />
-        </div>
-      </div>
-      
-      <h3 className="production-section-title">Artwork & Images</h3>
-      <div className="form-row">
-        <div className="form-group">
-          <label className="file-upload-label">Front Artwork</label>
-          <div className="file-upload">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleFileUpload(e, 'front')}
-              disabled={uploading.front}
-              className="file-upload-input"
-            />
-            {uploading.front && <p>Uploading...</p>}
-            {productionDetails.front_artwork_url && (
-              <div className="image-preview">
-                <img 
-                  src={productionDetails.front_artwork_url} 
-                  alt="Front Artwork" 
-                  style={{ maxWidth: '200px', marginTop: '10px' }} 
-                />
-              </div>
-            )}
+      {/* Product Information Section */}
+      <div className="production-section">
+        <h3 className="production-section-title">
+          <FontAwesomeIcon icon={faInfoCircle} />
+          Product Information
+        </h3>
+        <div className="production-info-grid">
+          <div className="info-card">
+            <div className="info-card-label">Unit UPC</div>
+            <div className="info-card-value">
+              <FontAwesomeIcon icon={faBarcode} className="mr-2" />
+              {unitUpc || 'N/A'}
+            </div>
           </div>
-        </div>
-        <div className="form-group">
-          <label className="file-upload-label">Back Artwork</label>
-          <div className="file-upload">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleFileUpload(e, 'back')}
-              disabled={uploading.back}
-              className="file-upload-input"
-            />
-            {uploading.back && <p>Uploading...</p>}
-            {productionDetails.back_artwork_url && (
-              <div className="image-preview">
-                <img 
-                  src={productionDetails.back_artwork_url} 
-                  alt="Back Artwork" 
-                  style={{ maxWidth: '200px', marginTop: '10px' }} 
-                />
-              </div>
-            )}
+          
+          <div className="info-card">
+            <div className="info-card-label">Lot Code Format</div>
+            <div className="info-card-value">
+              <FontAwesomeIcon icon={faCode} className="mr-2" />
+              {lotCodeFormat || 'N/A'}
+            </div>
+          </div>
+          
+          <div className="info-card">
+            <div className="info-card-label">Shelf Life</div>
+            <div className="info-card-value">
+              <FontAwesomeIcon icon={faCalendarAlt} className="mr-2" />
+              {`${shelfLifeYears || 0} years, ${shelfLifeMonths || 0} months`}
+            </div>
           </div>
         </div>
       </div>
       
-      <div className="form-row">
-        <div className="form-group">
-          <label className="file-upload-label">Lot Code Placement</label>
-          <div className="file-upload">
+      {/* Weight Information Section */}
+      <div className="production-section">
+        <h3 className="production-section-title">
+          <FontAwesomeIcon icon={faWeight} />
+          Weight Information
+        </h3>
+        <div className="weight-grid">
+          <div className="weight-card">
+            <div className="weight-card-header">
+              <div className="weight-card-label">Packaging Weight (g)</div>
+              <FontAwesomeIcon icon={faBoxOpen} className="weight-card-icon" />
+            </div>
             <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleFileUpload(e, 'lotCode')}
-              disabled={uploading.lotCode}
-              className="file-upload-input"
+              type="number"
+              id="packaging_weight_g"
+              className="weight-card-input"
+              value={productionDetails.packaging_weight_g || ''}
+              onChange={(e) => handleChange('packaging_weight_g', Number(e.target.value))}
+              placeholder="Enter weight in grams"
             />
-            {uploading.lotCode && <p>Uploading...</p>}
-            {productionDetails.lot_code_placement_url && (
-              <div className="image-preview">
-                <img 
-                  src={productionDetails.lot_code_placement_url} 
-                  alt="Lot Code Placement" 
-                  style={{ maxWidth: '200px', marginTop: '10px' }} 
-                />
-              </div>
-            )}
+          </div>
+          
+          <div className="weight-card">
+            <div className="weight-card-header">
+              <div className="weight-card-label">Inclusion Weight (g)</div>
+              <FontAwesomeIcon icon={faLeaf} className="weight-card-icon" />
+            </div>
+            <input
+              type="number"
+              id="inclusion_weight_g"
+              className="weight-card-input"
+              value={productionDetails.inclusion_weight_g || ''}
+              onChange={(e) => handleChange('inclusion_weight_g', Number(e.target.value))}
+              placeholder="Enter weight in grams"
+            />
+          </div>
+          
+          <div className="weight-card">
+            <div className="weight-card-header">
+              <div className="weight-card-label">Ingredient Weight (g)</div>
+              <FontAwesomeIcon icon={faLayerGroup} className="weight-card-icon" />
+            </div>
+            <input
+              type="number"
+              id="ingredient_weight_g"
+              className="weight-card-input calculated-field"
+              value={productionDetails.ingredient_weight_g || ''}
+              disabled
+              placeholder="Calculated automatically"
+            />
+          </div>
+          
+          <div className="weight-card">
+            <div className="weight-card-header">
+              <div className="weight-card-label">Unit Packaging Claim Weight (g)</div>
+              <FontAwesomeIcon icon={faTag} className="weight-card-icon" />
+            </div>
+            <input
+              type="number"
+              id="net_weight_g"
+              className="weight-card-input calculated-field"
+              value={productionDetails.net_weight_g || ''}
+              disabled
+              placeholder="Calculated automatically"
+            />
           </div>
         </div>
-        <div className="form-group">
-          <label className="file-upload-label">Inclusion Image</label>
-          <div className="file-upload">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleFileUpload(e, 'inclusion')}
-              disabled={uploading.inclusion}
-              className="file-upload-input"
-            />
-            {uploading.inclusion && <p>Uploading...</p>}
-            {productionDetails.inclusion_image_url && (
-              <div className="image-preview">
-                <img 
-                  src={productionDetails.inclusion_image_url} 
-                  alt="Inclusion" 
-                  style={{ maxWidth: '200px', marginTop: '10px' }} 
-                />
+      </div>
+      
+      {/* Artwork & Images Section */}
+      <div className="production-section">
+        <h3 className="production-section-title">
+          <FontAwesomeIcon icon={faImage} />
+          Artwork & Images
+        </h3>
+        <div className="artwork-grid">
+          {/* Front Artwork */}
+          <div className="artwork-card">
+            <div className="artwork-card-header">
+              Front Artwork
+            </div>
+            <div className="artwork-card-content">
+              {productionDetails.front_artwork_url ? (
+                <div className="artwork-preview">
+                  <img 
+                    src={productionDetails.front_artwork_url} 
+                    alt="Front Artwork" 
+                  />
+                </div>
+              ) : (
+                <div className="empty-artwork">
+                  <FontAwesomeIcon icon={faImage} className="empty-artwork-icon" />
+                  <div className="empty-artwork-text">No front artwork uploaded yet</div>
+                </div>
+              )}
+              
+              <div className="artwork-upload">
+                <label className="artwork-upload-input">
+                  <FontAwesomeIcon icon={faUpload} className="artwork-upload-icon" />
+                  <span className="artwork-upload-text">Click or drag to upload front artwork</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload(e, 'front')}
+                    disabled={uploading.front}
+                  />
+                </label>
+                {uploading.front && (
+                  <div className="uploading-indicator">
+                    <div className="uploading-spinner"></div>
+                    <span>Uploading...</span>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+          </div>
+          
+          {/* Back Artwork */}
+          <div className="artwork-card">
+            <div className="artwork-card-header">
+              Back Artwork
+            </div>
+            <div className="artwork-card-content">
+              {productionDetails.back_artwork_url ? (
+                <div className="artwork-preview">
+                  <img 
+                    src={productionDetails.back_artwork_url} 
+                    alt="Back Artwork" 
+                  />
+                </div>
+              ) : (
+                <div className="empty-artwork">
+                  <FontAwesomeIcon icon={faImage} className="empty-artwork-icon" />
+                  <div className="empty-artwork-text">No back artwork uploaded yet</div>
+                </div>
+              )}
+              
+              <div className="artwork-upload">
+                <label className="artwork-upload-input">
+                  <FontAwesomeIcon icon={faUpload} className="artwork-upload-icon" />
+                  <span className="artwork-upload-text">Click or drag to upload back artwork</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload(e, 'back')}
+                    disabled={uploading.back}
+                  />
+                </label>
+                {uploading.back && (
+                  <div className="uploading-indicator">
+                    <div className="uploading-spinner"></div>
+                    <span>Uploading...</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {/* Lot Code Placement */}
+          <div className="artwork-card">
+            <div className="artwork-card-header">
+              Lot Code Placement
+            </div>
+            <div className="artwork-card-content">
+              {productionDetails.lot_code_placement_url ? (
+                <div className="artwork-preview">
+                  <img 
+                    src={productionDetails.lot_code_placement_url} 
+                    alt="Lot Code Placement" 
+                  />
+                </div>
+              ) : (
+                <div className="empty-artwork">
+                  <FontAwesomeIcon icon={faImage} className="empty-artwork-icon" />
+                  <div className="empty-artwork-text">No lot code placement image uploaded yet</div>
+                </div>
+              )}
+              
+              <div className="artwork-upload">
+                <label className="artwork-upload-input">
+                  <FontAwesomeIcon icon={faUpload} className="artwork-upload-icon" />
+                  <span className="artwork-upload-text">Click or drag to upload lot code placement</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload(e, 'lotCode')}
+                    disabled={uploading.lotCode}
+                  />
+                </label>
+                {uploading.lotCode && (
+                  <div className="uploading-indicator">
+                    <div className="uploading-spinner"></div>
+                    <span>Uploading...</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {/* Inclusion Image */}
+          <div className="artwork-card">
+            <div className="artwork-card-header">
+              Inclusion Image
+            </div>
+            <div className="artwork-card-content">
+              {productionDetails.inclusion_image_url ? (
+                <div className="artwork-preview">
+                  <img 
+                    src={productionDetails.inclusion_image_url} 
+                    alt="Inclusion" 
+                  />
+                </div>
+              ) : (
+                <div className="empty-artwork">
+                  <FontAwesomeIcon icon={faImage} className="empty-artwork-icon" />
+                  <div className="empty-artwork-text">No inclusion image uploaded yet</div>
+                </div>
+              )}
+              
+              <div className="artwork-upload">
+                <label className="artwork-upload-input">
+                  <FontAwesomeIcon icon={faUpload} className="artwork-upload-icon" />
+                  <span className="artwork-upload-text">Click or drag to upload inclusion image</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload(e, 'inclusion')}
+                    disabled={uploading.inclusion}
+                  />
+                </label>
+                {uploading.inclusion && (
+                  <div className="uploading-indicator">
+                    <div className="uploading-spinner"></div>
+                    <span>Uploading...</span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

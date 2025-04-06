@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faFlask, 
+  faVial, 
+  faMicroscope, 
+  faPlus, 
+  faTimes, 
+  faEye, 
+  faLeaf, 
+  faAtom
+} from '@fortawesome/free-solid-svg-icons';
 
 function ProductTesting({ specSheetId }) {
   const [organolepticSpecs, setOrganolepticSpecs] = useState([]);
@@ -226,6 +237,20 @@ function ProductTesting({ specSheetId }) {
     }
   };
 
+  // Get the appropriate icon for each test type
+  const getTestTypeIcon = (specType) => {
+    switch (specType) {
+      case 'Organoleptic':
+        return faEye;
+      case 'Biological':
+        return faMicroscope;
+      case 'Additional':
+        return faAtom;
+      default:
+        return faFlask;
+    }
+  };
+
   // Render a spec table
   const renderSpecTable = (specs, specType) => {
     const options = {
@@ -236,8 +261,10 @@ function ProductTesting({ specSheetId }) {
     
     return (
       <div className="spec-table-section">
-        <h4>{specType} Specs</h4>
-        <table className="form-table">
+        <h4>
+          <FontAwesomeIcon icon={getTestTypeIcon(specType)} /> {specType} Specs
+        </h4>
+        <table className="testing-table">
           <thead>
             <tr>
               <th>Test</th>
@@ -252,7 +279,7 @@ function ProductTesting({ specSheetId }) {
               <tr key={spec.id || index}>
                 <td>
                   <select
-                    className="form-control"
+                    className="testing-select"
                     value={spec.test_name || ''}
                     onChange={(e) => handleSpecChange(index, 'test_name', e.target.value, specType)}
                   >
@@ -264,7 +291,7 @@ function ProductTesting({ specSheetId }) {
                 </td>
                 <td>
                   <select
-                    className="form-control"
+                    className="testing-select"
                     value={spec.method || ''}
                     onChange={(e) => handleSpecChange(index, 'method', e.target.value, specType)}
                   >
@@ -276,7 +303,7 @@ function ProductTesting({ specSheetId }) {
                 </td>
                 <td>
                   <select
-                    className="form-control"
+                    className="testing-select"
                     value={spec.stage || ''}
                     onChange={(e) => handleSpecChange(index, 'stage', e.target.value, specType)}
                   >
@@ -289,7 +316,7 @@ function ProductTesting({ specSheetId }) {
                 <td>
                   <input
                     type="text"
-                    className="form-control"
+                    className="testing-input"
                     value={spec.limit_spec || ''}
                     onChange={(e) => handleSpecChange(index, 'limit_spec', e.target.value, specType)}
                     placeholder={specType === 'Biological' ? '≤1500 CFU/g, Absent/25g' : ''}
@@ -297,10 +324,11 @@ function ProductTesting({ specSheetId }) {
                 </td>
                 <td>
                   <button 
-                    className="remove-row-button"
+                    className="testing-action-btn"
                     onClick={() => removeSpec(index, specType)}
+                    title="Remove Test"
                   >
-                    X
+                    <FontAwesomeIcon icon={faTimes} />
                   </button>
                 </td>
               </tr>
@@ -309,10 +337,10 @@ function ProductTesting({ specSheetId }) {
         </table>
         
         <button 
-          className="add-row-button"
+          className="testing-add-btn"
           onClick={() => addSpec(specType)}
         >
-          Add {specType} Test
+          <FontAwesomeIcon icon={faPlus} /> Add {specType} Test
         </button>
       </div>
     );

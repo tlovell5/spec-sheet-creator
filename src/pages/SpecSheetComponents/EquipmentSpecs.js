@@ -1,5 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faCogs, 
+  faTools, 
+  faWrench, 
+  faPlus, 
+  faTimes, 
+  faUpload, 
+  faImage, 
+  faRuler, 
+  faSliders, 
+  faCubes, 
+  faClipboardList, 
+  faUserCog,
+  faBoxes,
+  faTruck
+} from '@fortawesome/free-solid-svg-icons';
 
 function EquipmentSpecs({ specSheetId }) {
   const [equipmentSpecs, setEquipmentSpecs] = useState([]);
@@ -159,130 +176,193 @@ function EquipmentSpecs({ specSheetId }) {
     }
   };
 
+  // Get equipment icon based on type
+  const getEquipmentIcon = (type) => {
+    const lowerType = (type || '').toLowerCase();
+    
+    if (lowerType.includes('mixer')) return faTools;
+    if (lowerType.includes('filler')) return faCubes;
+    if (lowerType.includes('packag')) return faBoxes;
+    if (lowerType.includes('conveyor')) return faTruck;
+    
+    return faCogs;
+  };
+
   return (
     <div className="equipment-specs-container">
-      <table className="form-table">
-        <thead>
-          <tr>
-            <th>Equipment Type</th>
-            <th>Model/ID</th>
-            <th>Part Sizes</th>
-            <th>Settings</th>
-            <th>Configuration</th>
-            <th>Capacity</th>
-            <th>Maintenance Tips</th>
-            <th>Operator Notes</th>
-            <th>Picture</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {equipmentSpecs.map((spec, index) => (
-            <tr key={spec.id || index}>
-              <td>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={spec.equipment_type || ''}
-                  onChange={(e) => handleSpecChange(index, 'equipment_type', e.target.value)}
-                  placeholder="Mixer, Filler, etc."
+      <div className="equipment-specs-header">
+        <h3 className="equipment-specs-title">
+          <FontAwesomeIcon icon={faCogs} /> Equipment Specifications
+        </h3>
+      </div>
+      
+      <div className="equipment-cards">
+        {equipmentSpecs.map((spec, index) => (
+          <div className="equipment-card" key={spec.id || index}>
+            <div className="equipment-card-header">
+              <div className="equipment-card-header-left">
+                <FontAwesomeIcon 
+                  icon={getEquipmentIcon(spec.equipment_type)} 
+                  className="equipment-card-header-icon" 
                 />
-              </td>
-              <td>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={spec.model_id || ''}
-                  onChange={(e) => handleSpecChange(index, 'model_id', e.target.value)}
-                />
-              </td>
-              <td>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={spec.part_sizes || ''}
-                  onChange={(e) => handleSpecChange(index, 'part_sizes', e.target.value)}
-                />
-              </td>
-              <td>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={spec.settings || ''}
-                  onChange={(e) => handleSpecChange(index, 'settings', e.target.value)}
-                />
-              </td>
-              <td>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={spec.configuration || ''}
-                  onChange={(e) => handleSpecChange(index, 'configuration', e.target.value)}
-                />
-              </td>
-              <td>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={spec.capacity || ''}
-                  onChange={(e) => handleSpecChange(index, 'capacity', e.target.value)}
-                />
-              </td>
-              <td>
+                {spec.equipment_type || 'New Equipment'}
+              </div>
+              <button 
+                className="equipment-action-btn"
+                onClick={() => removeEquipmentSpec(index)}
+                title="Remove Equipment"
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            
+            <div className="equipment-card-content">
+              <div className="equipment-card-row">
+                <div className="equipment-card-field">
+                  <label className="equipment-card-label">Equipment Type</label>
+                  <input
+                    type="text"
+                    className="equipment-card-input"
+                    value={spec.equipment_type || ''}
+                    onChange={(e) => handleSpecChange(index, 'equipment_type', e.target.value)}
+                    placeholder="Mixer, Filler, etc."
+                  />
+                </div>
+                <div className="equipment-card-field">
+                  <label className="equipment-card-label">Model/ID</label>
+                  <input
+                    type="text"
+                    className="equipment-card-input"
+                    value={spec.model_id || ''}
+                    onChange={(e) => handleSpecChange(index, 'model_id', e.target.value)}
+                    placeholder="Model number or ID"
+                  />
+                </div>
+              </div>
+              
+              <div className="equipment-card-row">
+                <div className="equipment-card-field">
+                  <label className="equipment-card-label">
+                    <FontAwesomeIcon icon={faRuler} style={{ marginRight: '5px' }} />
+                    Part Sizes
+                  </label>
+                  <input
+                    type="text"
+                    className="equipment-card-input"
+                    value={spec.part_sizes || ''}
+                    onChange={(e) => handleSpecChange(index, 'part_sizes', e.target.value)}
+                    placeholder="Dimensions, sizes"
+                  />
+                </div>
+                <div className="equipment-card-field">
+                  <label className="equipment-card-label">
+                    <FontAwesomeIcon icon={faSliders} style={{ marginRight: '5px' }} />
+                    Settings
+                  </label>
+                  <input
+                    type="text"
+                    className="equipment-card-input"
+                    value={spec.settings || ''}
+                    onChange={(e) => handleSpecChange(index, 'settings', e.target.value)}
+                    placeholder="Speed, temperature, etc."
+                  />
+                </div>
+              </div>
+              
+              <div className="equipment-card-row">
+                <div className="equipment-card-field">
+                  <label className="equipment-card-label">Configuration</label>
+                  <input
+                    type="text"
+                    className="equipment-card-input"
+                    value={spec.configuration || ''}
+                    onChange={(e) => handleSpecChange(index, 'configuration', e.target.value)}
+                    placeholder="Setup configuration"
+                  />
+                </div>
+                <div className="equipment-card-field">
+                  <label className="equipment-card-label">Capacity</label>
+                  <input
+                    type="text"
+                    className="equipment-card-input"
+                    value={spec.capacity || ''}
+                    onChange={(e) => handleSpecChange(index, 'capacity', e.target.value)}
+                    placeholder="Production capacity"
+                  />
+                </div>
+              </div>
+              
+              <div className="equipment-card-field">
+                <label className="equipment-card-label">
+                  <FontAwesomeIcon icon={faWrench} style={{ marginRight: '5px' }} />
+                  Maintenance Tips
+                </label>
                 <textarea
-                  className="form-control"
+                  className="equipment-card-textarea"
                   value={spec.maintenance_tips || ''}
                   onChange={(e) => handleSpecChange(index, 'maintenance_tips', e.target.value)}
-                  rows={2}
+                  placeholder="Maintenance instructions and tips"
+                  rows={3}
                 />
-              </td>
-              <td>
+              </div>
+              
+              <div className="equipment-card-field">
+                <label className="equipment-card-label">
+                  <FontAwesomeIcon icon={faUserCog} style={{ marginRight: '5px' }} />
+                  Operator Notes
+                </label>
                 <textarea
-                  className="form-control"
+                  className="equipment-card-textarea"
                   value={spec.operator_notes || ''}
                   onChange={(e) => handleSpecChange(index, 'operator_notes', e.target.value)}
-                  rows={2}
+                  placeholder="Notes for equipment operators"
+                  rows={3}
                 />
-              </td>
-              <td>
-                <div className="file-upload">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleFileUpload(e, index)}
-                    disabled={uploading[index]}
-                    className="file-upload-input"
-                  />
-                  {uploading[index] && <p>Uploading...</p>}
-                  {spec.equipment_image_url && (
-                    <div className="image-preview">
-                      <img 
-                        src={spec.equipment_image_url} 
-                        alt="Equipment" 
-                        style={{ maxWidth: '100px', marginTop: '10px' }} 
-                      />
-                    </div>
-                  )}
+              </div>
+              
+              <div className="equipment-image-section">
+                <label className="equipment-card-label">
+                  <FontAwesomeIcon icon={faImage} style={{ marginRight: '5px' }} />
+                  Equipment Image
+                </label>
+                
+                {spec.equipment_image_url ? (
+                  <div className="equipment-image-preview">
+                    <img 
+                      src={spec.equipment_image_url} 
+                      alt="Equipment" 
+                    />
+                  </div>
+                ) : (
+                  <div className="equipment-empty-image">
+                    <FontAwesomeIcon icon={faImage} className="equipment-empty-icon" />
+                    <div className="equipment-empty-text">No image uploaded</div>
+                  </div>
+                )}
+                
+                <div className="equipment-image-upload">
+                  <div className="equipment-upload-btn">
+                    <FontAwesomeIcon icon={faUpload} className="equipment-upload-icon" />
+                    <span>{uploading[index] ? 'Uploading...' : 'Upload equipment image'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, index)}
+                      disabled={uploading[index]}
+                    />
+                  </div>
                 </div>
-              </td>
-              <td>
-                <button 
-                  className="remove-row-button"
-                  onClick={() => removeEquipmentSpec(index)}
-                >
-                  X
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
       
       <button 
-        className="add-row-button"
+        className="equipment-add-btn"
         onClick={addEquipmentSpec}
       >
-        Add Equipment
+        <FontAwesomeIcon icon={faPlus} /> Add Equipment
       </button>
     </div>
   );

@@ -1,8 +1,21 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from './supabaseClient';
 import { Link } from 'react-router-dom';
-import './Dashboard.css';
 import { jsPDF } from 'jspdf';
+import { 
+  PlusIcon, 
+  MagnifyingGlassIcon, 
+  ChevronUpIcon, 
+  ChevronDownIcon,
+  PencilIcon,
+  DocumentArrowDownIcon,
+  DocumentDuplicateIcon,
+  PencilSquareIcon,
+  TrashIcon,
+  EllipsisVerticalIcon,
+  DocumentTextIcon,
+  ClipboardDocumentListIcon
+} from '@heroicons/react/24/outline';
 
 function Dashboard() {
   const [specSheets, setSpecSheets] = useState([]);
@@ -98,9 +111,11 @@ function Dashboard() {
     setSortConfig({ key, direction });
   };
 
-  const getSortDirectionIndicator = (key) => {
-    if (sortConfig.key !== key) return '';
-    return sortConfig.direction === 'ascending' ? ' ↑' : ' ↓';
+  const getSortDirectionIcon = (key) => {
+    if (sortConfig.key !== key) return null;
+    return sortConfig.direction === 'ascending' 
+      ? <ChevronUpIcon className="sort-icon" /> 
+      : <ChevronDownIcon className="sort-icon" />;
   };
 
   const downloadPDF = (sheet) => {
@@ -135,37 +150,26 @@ function Dashboard() {
   const requestSignature = async (sheet) => {
     const recipientEmail = sheet.customer_email; // Assuming the email is stored in the sheet data
     const signatureLink = `https://yourapp.com/sign/${sheet.id}`; // Generate a link for signing
-
-    // Call your backend API to send an email
-    const response = await fetch('http://localhost:3001/api/send-signature-request', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: recipientEmail,
-        link: signatureLink,
-      }),
-    });
-
-    if (response.ok) {
-      alert(`Signature request sent to ${recipientEmail}`);
-    } else {
-      console.error('Failed to send signature request');
-    }
+    
+    // Here you would integrate with an e-signature service or send an email
+    console.log(`Requesting signature for spec sheet ${sheet.id} from ${recipientEmail}`);
+    alert(`Signature request would be sent to ${recipientEmail || 'customer'}`);
   };
 
   const deleteSpecSheet = async (id) => {
-    const { error } = await supabase
-      .from('spec_sheets')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('Error deleting spec sheet:', error);
-    } else {
-      setSpecSheets(specSheets.filter(sheet => sheet.id !== id));
-      console.log('Spec sheet deleted successfully');
+    if (window.confirm('Are you sure you want to delete this spec sheet? This action cannot be undone.')) {
+      const { error } = await supabase
+        .from('spec_sheets')
+        .delete()
+        .eq('id', id);
+      
+      if (error) {
+        console.error('Error deleting spec sheet:', error);
+        alert('Failed to delete spec sheet. Please try again.');
+      } else {
+        // Update local state
+        setSpecSheets(specSheets.filter(sheet => sheet.id !== id));
+      }
     }
   };
 
@@ -173,50 +177,55 @@ function Dashboard() {
     setActiveDropdown(activeDropdown === id ? null : id);
   };
 
-  // Function to get status class for styling
-  const getStatusClass = (status) => {
-    switch(status) {
-      case 'Draft': return 'status-draft';
-      case 'In Review': return 'status-review';
-      case 'Approved': return 'status-approved';
-      case 'Rejected': return 'status-rejected';
-      default: return '';
+  const getStatusBadgeClass = (status) => {
+    switch(status?.toLowerCase()) {
+      case 'in review':
+        return 'status-badge-dashboard status-badge-review';
+      case 'approved':
+        return 'status-badge-dashboard status-badge-approved';
+      case 'rejected':
+        return 'status-badge-dashboard status-badge-rejected';
+      default:
+        return 'status-badge-dashboard status-badge-draft';
     }
   };
 
   return (
-    <div className="dashboard-wrapper">
-      <div className="container">
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="dashboard-container">
         <div className="dashboard-header">
           <div>
             <h1 className="dashboard-title">Spec Sheet Dashboard</h1>
             <p className="dashboard-subtitle">Manage and track all your product specifications</p>
           </div>
-          <Link to="/create" style={{ textDecoration: 'none' }}>
-            <button className="create-button">
-              <span>+</span> 
+          <div className="dashboard-actions">
+            <Link to="/create" className="spec-sheet-button primary">
+              <PlusIcon className="w-5 h-5" /> 
               New Spec Sheet
-            </button>
-          </Link>
+            </Link>
+          </div>
         </div>
         
         {/* Search and Filter Controls */}
-        <div className="controls">
-          <div className="search-box">
+        <div className="dashboard-controls">
+          <div className="search-container">
+            <MagnifyingGlassIcon className="search-icon w-5 h-5" />
             <input
               type="text"
-              placeholder="Search specs..."
+              placeholder="Search by product name, customer, or revision..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
             />
           </div>
           
-          <div className="filter-box">
+          <div>
             <select
               id="status-filter"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               aria-label="Filter by status"
+              className="filter-select"
             >
               <option value="all">All Statuses</option>
               <option value="Draft">Draft</option>
@@ -232,76 +241,164 @@ function Dashboard() {
           Showing {filteredSheets.length} of {specSheets.length} spec sheets
         </div>
         
-        <div className="table-container">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Document Type</th>
-                <th onClick={() => requestSort('product_name')}>
-                  Product Name {getSortDirectionIndicator('product_name')}
-                </th>
-                <th onClick={() => requestSort('customer_name')}>
-                  Customer {getSortDirectionIndicator('customer_name')}
-                </th>
-                <th onClick={() => requestSort('spec_revision')}>
-                  Revision {getSortDirectionIndicator('spec_revision')}
-                </th>
-                <th onClick={() => requestSort('status')}>
-                  Status {getSortDirectionIndicator('status')}
-                </th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredSheets.map((sheet) => (
-                <tr key={sheet.id}>
-                  <td>Spec Sheet</td>
-                  <td>{sheet.product_name}</td>
-                  <td>{sheet.customer_name}</td>
-                  <td>{sheet.spec_revision}</td>
-                  <td>
-                    <span className={`status-pill ${getStatusClass(sheet.status)}`}>
-                      {sheet.status}
-                    </span>
-                  </td>
-                  <td className="actions-cell">
-                    <div className="dropdown-container" ref={activeDropdown === sheet.id ? dropdownRef : null}>
-                      <button className="dropdown-toggle" onClick={() => toggleDropdown(sheet.id)}>
-                        <span className="dots">&#8942;</span>
-                      </button>
-                      {activeDropdown === sheet.id && (
-                        <div className="dropdown-menu">
-                          <Link to={`/edit/${sheet.id}`} className="dropdown-item">
-                            <span className="dropdown-item-icon">✏️</span> Edit
-                          </Link>
-                          <button className="dropdown-item" onClick={() => downloadPDF(sheet)}>
-                            <span className="dropdown-item-icon">📄</span> Download PDF
-                          </button>
-                          <button className="dropdown-item" onClick={() => duplicateSpecSheet(sheet)}>
-                            <span className="dropdown-item-icon">🔄</span> Duplicate
-                          </button>
-                          <button className="dropdown-item" onClick={() => requestSignature(sheet)}>
-                            <span className="dropdown-item-icon">✍️</span> Request Signature
-                          </button>
-                          <button className="dropdown-item delete" onClick={() => deleteSpecSheet(sheet.id)}>
-                            <span className="dropdown-item-icon">🗑️</span> Delete
-                          </button>
+        <div className="dashboard-card">
+          {filteredSheets.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="dashboard-table">
+                <thead>
+                  <tr>
+                    <th scope="col">
+                      Document Type
+                    </th>
+                    <th 
+                      scope="col" 
+                      className="sortable"
+                      onClick={() => requestSort('product_name')}
+                    >
+                      <div className="sort-container">
+                        <span>Product Name</span>
+                        {getSortDirectionIcon('product_name')}
+                      </div>
+                    </th>
+                    <th 
+                      scope="col" 
+                      className="sortable"
+                      onClick={() => requestSort('customer_name')}
+                    >
+                      <div className="sort-container">
+                        <span>Customer</span>
+                        {getSortDirectionIcon('customer_name')}
+                      </div>
+                    </th>
+                    <th 
+                      scope="col" 
+                      className="sortable"
+                      onClick={() => requestSort('spec_revision')}
+                    >
+                      <div className="sort-container">
+                        <span>Revision</span>
+                        {getSortDirectionIcon('spec_revision')}
+                      </div>
+                    </th>
+                    <th 
+                      scope="col" 
+                      className="sortable"
+                      onClick={() => requestSort('status')}
+                    >
+                      <div className="sort-container">
+                        <span>Status</span>
+                        {getSortDirectionIcon('status')}
+                      </div>
+                    </th>
+                    <th scope="col" className="text-right">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredSheets.map((sheet) => (
+                    <tr key={sheet.id}>
+                      <td>
+                        <div className="document-type">
+                          <div className="document-icon">
+                            <ClipboardDocumentListIcon className="w-5 h-5" />
+                          </div>
+                          <span className="document-label">Spec Sheet</span>
                         </div>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      </td>
+                      <td>{sheet.product_name || 'Untitled'}</td>
+                      <td>{sheet.customer_name || 'N/A'}</td>
+                      <td>{sheet.spec_revision || 'Draft'}</td>
+                      <td>
+                        <span className={getStatusBadgeClass(sheet.status)}>
+                          {sheet.status || 'Draft'}
+                        </span>
+                      </td>
+                      <td className="text-right">
+                        <div className="flex justify-end gap-1">
+                          <Link 
+                            to={`/edit/${sheet.id}`} 
+                            className="action-button edit" 
+                            title="Edit"
+                          >
+                            <PencilIcon className="w-4 h-4" />
+                          </Link>
+                          <button 
+                            onClick={() => downloadPDF(sheet)} 
+                            className="action-button download" 
+                            title="Download PDF"
+                          >
+                            <DocumentArrowDownIcon className="w-4 h-4" />
+                          </button>
+                          <div className="action-dropdown" ref={activeDropdown === sheet.id ? dropdownRef : null}>
+                            <button 
+                              onClick={() => toggleDropdown(sheet.id)} 
+                              className="action-button" 
+                              title="More actions"
+                            >
+                              <EllipsisVerticalIcon className="w-4 h-4" />
+                            </button>
+                            {activeDropdown === sheet.id && (
+                              <div className="action-dropdown-menu">
+                                <div 
+                                  className="action-dropdown-item"
+                                  onClick={() => duplicateSpecSheet(sheet)}
+                                >
+                                  <DocumentDuplicateIcon className="icon" />
+                                  Duplicate
+                                </div>
+                                <div 
+                                  className="action-dropdown-item"
+                                  onClick={() => requestSignature(sheet)}
+                                >
+                                  <PencilSquareIcon className="icon" />
+                                  Request Signature
+                                </div>
+                                <div className="action-dropdown-divider"></div>
+                                <div 
+                                  className="action-dropdown-item"
+                                  onClick={() => deleteSpecSheet(sheet.id)}
+                                >
+                                  <TrashIcon className="icon" style={{ color: 'var(--danger)' }} />
+                                  Delete
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="empty-state">
+              <DocumentTextIcon className="empty-state-icon" />
+              <h3 className="empty-state-title">No spec sheets found</h3>
+              <p className="empty-state-description">
+                {searchTerm || statusFilter !== 'all' 
+                  ? 'Try adjusting your search or filter criteria.' 
+                  : 'Get started by creating your first spec sheet.'}
+              </p>
+              {!searchTerm && statusFilter === 'all' && (
+                <Link to="/create" className="spec-sheet-button primary">
+                  <PlusIcon className="w-5 h-5" /> 
+                  Create Spec Sheet
+                </Link>
+              )}
+            </div>
+          )}
+          
+          {/* Pagination could be added here if needed */}
+          {filteredSheets.length > 0 && (
+            <div className="pagination">
+              <div className="pagination-info">
+                Showing {filteredSheets.length} of {specSheets.length} spec sheets
+              </div>
+            </div>
+          )}
         </div>
-        
-        {/* No results message */}
-        {filteredSheets.length === 0 && (
-          <div className="no-results">
-            No spec sheets found matching your criteria.
-          </div>
-        )}
       </div>
     </div>
   );

@@ -1,0 +1,93 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./src/**/*.{js,jsx,ts,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: '#f0f9f1',
+          100: '#dcf1de',
+          200: '#bae3be',
+          300: '#8ecd94',
+          400: '#5eb167',
+          500: '#2e7d32', // Primary color
+          600: '#256429',
+          700: '#1f5021',
+          800: '#1b421c',
+          900: '#173618',
+          950: '#0c1e0c',
+        },
+        secondary: {
+          50: '#f6f8f9',
+          100: '#ebeef1',
+          200: '#dde3e7',
+          300: '#c3cdd5',
+          400: '#a3b1bd',
+          500: '#8798a5',
+          600: '#6c7d8a',
+          700: '#596673',
+          800: '#455a64', // Secondary color
+          900: '#394a53',
+          950: '#263238',
+        },
+        success: '#28a745',
+        info: '#0288d1',
+        warning: '#ffc107',
+        danger: '#dc3545',
+        gray: {
+          50: '#f9fafb',
+          100: '#f3f4f6',
+          200: '#e5e7eb',
+          300: '#d1d5db',
+          400: '#9ca3af',
+          500: '#6b7280',
+          600: '#4b5563',
+          700: '#374151',
+          800: '#1f2937',
+          900: '#111827',
+          950: '#030712',
+        }
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+      },
+      boxShadow: {
+        sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+        DEFAULT: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+        md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+      },
+      borderRadius: {
+        'sm': '0.25rem',
+        DEFAULT: '0.375rem',
+        'md': '0.5rem',
+        'lg': '0.75rem',
+        'xl': '1rem',
+      },
+      spacing: {
+        '0': '0',
+        '1': '0.25rem',
+        '2': '0.5rem',
+        '3': '0.75rem',
+        '4': '1rem',
+        '5': '1.25rem',
+        '6': '1.5rem',
+        '8': '2rem',
+        '10': '2.5rem',
+        '12': '3rem',
+        '16': '4rem',
+        '20': '5rem',
+        '24': '6rem',
+        '32': '8rem',
+        '40': '10rem',
+        '48': '12rem',
+        '56': '14rem',
+        '64': '16rem',
+      },
+    },
+  },
+  plugins: [],
+}

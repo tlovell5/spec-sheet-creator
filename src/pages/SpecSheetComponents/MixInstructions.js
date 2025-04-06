@@ -1,11 +1,28 @@
 import React, { useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBlender, faPlus, faTrash, faUpload, faImage, faExternalLinkAlt, faArrowUp, faArrowDown } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faBlender, 
+  faPlus, 
+  faTrash, 
+  faUpload, 
+  faImage, 
+  faExternalLinkAlt, 
+  faArrowUp, 
+  faArrowDown,
+  faInfoCircle,
+  faListOl,
+  faChevronDown,
+  faThLarge,
+  faList,
+  faListAlt
+} from '@fortawesome/free-solid-svg-icons';
 
 const MixInstructions = ({ specSheetData, setSpecSheetData }) => {
   const [uploading, setUploading] = useState(null); // Tracks which step is uploading
   const [uploadError, setUploadError] = useState('');
+  const [collapsedSteps, setCollapsedSteps] = useState({}); // Tracks which steps are collapsed
+  const [viewMode, setViewMode] = useState('list'); // 'list', 'grid', or 'compact'
   
   const handleAddStep = () => {
     setSpecSheetData(prevData => ({
@@ -42,6 +59,21 @@ const MixInstructions = ({ specSheetData, setSpecSheetData }) => {
         }
       };
     });
+    
+    // Update collapsed steps state
+    const newCollapsedSteps = { ...collapsedSteps };
+    delete newCollapsedSteps[index];
+    
+    // Adjust keys for steps after the removed one
+    Object.keys(newCollapsedSteps).forEach(key => {
+      const keyNum = parseInt(key);
+      if (keyNum > index) {
+        newCollapsedSteps[keyNum - 1] = newCollapsedSteps[keyNum];
+        delete newCollapsedSteps[keyNum];
+      }
+    });
+    
+    setCollapsedSteps(newCollapsedSteps);
   };
   
   const handleMoveStep = (index, direction) => {
@@ -72,6 +104,26 @@ const MixInstructions = ({ specSheetData, setSpecSheetData }) => {
         }
       };
     });
+    
+    // Update collapsed steps state for the swapped steps
+    const newCollapsedSteps = { ...collapsedSteps };
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    const isCurrentCollapsed = collapsedSteps[index];
+    const isTargetCollapsed = collapsedSteps[targetIndex];
+    
+    if (isCurrentCollapsed !== undefined || isTargetCollapsed !== undefined) {
+      if (isCurrentCollapsed !== undefined) {
+        newCollapsedSteps[targetIndex] = isCurrentCollapsed;
+        delete newCollapsedSteps[index];
+      }
+      
+      if (isTargetCollapsed !== undefined) {
+        newCollapsedSteps[index] = isTargetCollapsed;
+        delete newCollapsedSteps[targetIndex];
+      }
+      
+      setCollapsedSteps(newCollapsedSteps);
+    }
   };
   
   const handleStepChange = (index, field, value) => {
@@ -142,126 +194,249 @@ const MixInstructions = ({ specSheetData, setSpecSheetData }) => {
   const handleRemoveImage = (index) => {
     handleStepChange(index, 'image', '');
   };
+  
+  const toggleStepCollapse = (index) => {
+    setCollapsedSteps(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }));
+  };
+  
+  const getStepSummary = (step) => {
+    if (!step.description) return "No description";
+    return step.description.length > 50 
+      ? `${step.description.substring(0, 50)}...` 
+      : step.description;
+  };
+  
+  const collapseAllSteps = () => {
+    const allCollapsed = {};
+    specSheetData.mixInstructions.steps?.forEach((_, index) => {
+      allCollapsed[index] = true;
+    });
+    setCollapsedSteps(allCollapsed);
+  };
+  
+  const expandAllSteps = () => {
+    setCollapsedSteps({});
+  };
+
+  // Check if there are any steps
+  const hasSteps = specSheetData.mixInstructions?.steps?.length > 0;
 
   return (
     <div className="spec-sheet-section">
       <div className="section-header">
-        <FontAwesomeIcon icon={faBlender} className="section-icon" />
-        <h2>Mixing Instructions</h2>
+        <div className="header-left">
+          <FontAwesomeIcon icon={faBlender} className="section-icon" />
+          <h2>Mixing Instructions</h2>
+        </div>
+        <div className="header-right">
+          {hasSteps && (
+            <span className="step-count-badge">
+              {specSheetData.mixInstructions?.steps?.length} {specSheetData.mixInstructions?.steps?.length === 1 ? 'Step' : 'Steps'}
+            </span>
+          )}
+        </div>
       </div>
+      
       <div className="section-content">
-        <div className="mix-instructions-container">
-          {specSheetData.mixInstructions.steps?.map((step, index) => (
-            <div key={index} className="mix-step">
-              <div className="step-header">
-                <div className="step-number">Step {step.stepNumber}</div>
-                <div className="step-actions">
-                  <button 
-                    className="btn-icon" 
-                    onClick={() => handleMoveStep(index, 'up')}
-                    disabled={index === 0}
-                    title="Move Up"
-                  >
-                    <FontAwesomeIcon icon={faArrowUp} />
-                  </button>
-                  <button 
-                    className="btn-icon" 
-                    onClick={() => handleMoveStep(index, 'down')}
-                    disabled={index === specSheetData.mixInstructions.steps.length - 1}
-                    title="Move Down"
-                  >
-                    <FontAwesomeIcon icon={faArrowDown} />
-                  </button>
-                  <button 
-                    className="btn-icon delete" 
-                    onClick={() => handleRemoveStep(index)}
-                    title="Remove Step"
-                  >
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
-                </div>
+        {hasSteps ? (
+          <>
+            <div className="step-tools-bar">
+              <div className="step-tools-left">
+                <button 
+                  className="view-toggle-button" 
+                  onClick={expandAllSteps}
+                  title="Expand All Steps"
+                >
+                  <FontAwesomeIcon icon={faListAlt} /> Expand All
+                </button>
+                <button 
+                  className="view-toggle-button" 
+                  onClick={collapseAllSteps}
+                  title="Collapse All Steps"
+                >
+                  <FontAwesomeIcon icon={faList} /> Collapse All
+                </button>
               </div>
-              
-              <div className="step-content">
-                <div className="form-group">
-                  <label htmlFor={`step-${index}-description`}>Description</label>
-                  <textarea
-                    id={`step-${index}-description`}
-                    value={step.description || ''}
-                    onChange={(e) => handleStepChange(index, 'description', e.target.value)}
-                    placeholder="Describe this step..."
-                    rows="3"
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <div className="file-upload">
-                    <label className="file-upload-label">Step Image</label>
-                    <label className="file-upload-input">
-                      <FontAwesomeIcon icon={faUpload} /> 
-                      <span>Click or drag to upload image</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleImageUpload(e, index)}
-                        style={{ display: 'none' }}
-                      />
-                    </label>
-                    {uploadError && uploading === index && (
-                      <div className="error-message">{uploadError}</div>
-                    )}
-                  </div>
-                  
-                  {step.image ? (
-                    <div className="image-preview-container">
-                      <div className="image-preview">
-                        <img src={step.image} alt={`Step ${step.stepNumber}`} />
-                        
-                        {uploading === index && (
-                          <div className="uploading-overlay">
-                            <div className="uploading-spinner"></div>
-                            <div className="uploading-text">Uploading...</div>
-                          </div>
-                        )}
-                        
-                        <div className="image-actions">
-                          <button 
-                            className="image-action-button" 
-                            onClick={() => window.open(step.image, '_blank')}
-                            title="View Full Size"
-                          >
-                            <FontAwesomeIcon icon={faExternalLinkAlt} />
-                          </button>
-                          <button 
-                            className="image-action-button delete" 
-                            onClick={() => handleRemoveImage(index)}
-                            title="Remove Image"
-                          >
-                            <FontAwesomeIcon icon={faTrash} />
-                          </button>
-                        </div>
-                      </div>
-                      <div className="image-caption">Step {step.stepNumber} Image</div>
-                    </div>
-                  ) : (
-                    <div className="image-preview-container">
-                      <div className="image-placeholder">
-                        <FontAwesomeIcon icon={faImage} />
-                        <span>No image uploaded for this step</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
+              <div className="step-tools-right">
+                <button 
+                  className={`view-toggle-button ${viewMode === 'list' ? 'active' : ''}`} 
+                  onClick={() => setViewMode('list')}
+                  title="List View"
+                >
+                  <FontAwesomeIcon icon={faList} /> List
+                </button>
+                <button 
+                  className={`view-toggle-button ${viewMode === 'compact' ? 'active' : ''}`} 
+                  onClick={() => setViewMode('compact')}
+                  title="Compact View"
+                >
+                  <FontAwesomeIcon icon={faListAlt} /> Compact
+                </button>
+                <button 
+                  className={`view-toggle-button ${viewMode === 'grid' ? 'active' : ''}`} 
+                  onClick={() => setViewMode('grid')}
+                  title="Grid View"
+                >
+                  <FontAwesomeIcon icon={faThLarge} /> Grid
+                </button>
               </div>
             </div>
-          ))}
-          
-          <div className="add-step-container">
+            
+            <div className={`mix-instructions-container ${viewMode}-mode`}>
+              {specSheetData.mixInstructions.steps?.map((step, index) => (
+                <div 
+                  key={index} 
+                  className={`mix-step ${collapsedSteps[index] ? 'collapsed' : ''}`}
+                >
+                  <div 
+                    className="step-header" 
+                    onClick={() => toggleStepCollapse(index)}
+                  >
+                    <div className="step-number">
+                      <span className="step-number-circle">{step.stepNumber}</span>
+                      Step {step.stepNumber}
+                      {collapsedSteps[index] && (
+                        <span className="step-summary">{getStepSummary(step)}</span>
+                      )}
+                    </div>
+                    <div className="step-actions">
+                      <FontAwesomeIcon 
+                        icon={faChevronDown} 
+                        className="step-collapse-indicator" 
+                      />
+                      <button 
+                        className="btn-icon" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMoveStep(index, 'up');
+                        }}
+                        disabled={index === 0}
+                        title="Move Up"
+                      >
+                        <FontAwesomeIcon icon={faArrowUp} />
+                      </button>
+                      <button 
+                        className="btn-icon" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMoveStep(index, 'down');
+                        }}
+                        disabled={index === specSheetData.mixInstructions.steps.length - 1}
+                        title="Move Down"
+                      >
+                        <FontAwesomeIcon icon={faArrowDown} />
+                      </button>
+                      <button 
+                        className="btn-icon delete" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveStep(index);
+                        }}
+                        title="Remove Step"
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="step-content">
+                    <div className="form-group">
+                      <label htmlFor={`step-${index}-description`}>Description</label>
+                      <textarea
+                        id={`step-${index}-description`}
+                        value={step.description || ''}
+                        onChange={(e) => handleStepChange(index, 'description', e.target.value)}
+                        placeholder="Describe this step in detail..."
+                        rows="3"
+                      />
+                      <div className="form-help-text">
+                        <FontAwesomeIcon icon={faInfoCircle} />
+                        <span>Provide clear instructions for this mixing step</span>
+                      </div>
+                    </div>
+                    
+                    <div className="form-group">
+                      <div className="file-upload">
+                        <label className="file-upload-label">Step Image</label>
+                        <label className="file-upload-input">
+                          <FontAwesomeIcon icon={faUpload} /> 
+                          <span>Click or drag to upload image</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleImageUpload(e, index)}
+                            style={{ display: 'none' }}
+                          />
+                        </label>
+                        {uploadError && uploading === index && (
+                          <div className="error-message">{uploadError}</div>
+                        )}
+                      </div>
+                      
+                      {step.image ? (
+                        <div className="image-preview-container">
+                          <div className="image-preview">
+                            <img src={step.image} alt={`Step ${step.stepNumber}`} />
+                            
+                            {uploading === index && (
+                              <div className="uploading-overlay">
+                                <div className="uploading-spinner"></div>
+                                <div className="uploading-text">Uploading...</div>
+                              </div>
+                            )}
+                            
+                            <div className="image-actions">
+                              <button 
+                                className="image-action-button" 
+                                onClick={() => window.open(step.image, '_blank')}
+                                title="View Full Size"
+                              >
+                                <FontAwesomeIcon icon={faExternalLinkAlt} />
+                              </button>
+                              <button 
+                                className="image-action-button delete" 
+                                onClick={() => handleRemoveImage(index)}
+                                title="Remove Image"
+                              >
+                                <FontAwesomeIcon icon={faTrash} />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="image-caption">Step {step.stepNumber} Image</div>
+                        </div>
+                      ) : (
+                        <div className="image-preview-container">
+                          <div className="image-placeholder">
+                            <FontAwesomeIcon icon={faImage} />
+                            <span>No image uploaded for this step</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="add-step-container">
+              <button className="btn btn-primary" onClick={handleAddStep}>
+                <FontAwesomeIcon icon={faPlus} /> Add Step
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="empty-mix-instructions">
+            <FontAwesomeIcon icon={faListOl} />
+            <h3>No Mixing Steps Added Yet</h3>
+            <p>Add step-by-step instructions for mixing your product. Each step can include a description and an optional image.</p>
             <button className="btn btn-primary" onClick={handleAddStep}>
-              <FontAwesomeIcon icon={faPlus} /> Add Step
+              <FontAwesomeIcon icon={faPlus} /> Add First Step
             </button>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
