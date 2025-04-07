@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../supabaseClient';
+import { supabase, uploadFile, STORAGE_FOLDERS } from '../../supabaseClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faInfoCircle, 
@@ -178,24 +178,12 @@ function ProductionDetails({
     setUploading(prev => ({ ...prev, [fileType]: true }));
     
     try {
-      // Create a unique file name
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-      const filePath = `production-details/${fileName}`;
+      // Use the enhanced upload function
+      const { success, publicUrl, error } = await uploadFile(file, STORAGE_FOLDERS.PRODUCTION_DETAILS);
       
-      // Upload to Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from('spec-sheet-assets')
-        .upload(filePath, file);
-      
-      if (uploadError) {
-        throw uploadError;
+      if (!success) {
+        throw error;
       }
-      
-      // Get the public URL
-      const { data: urlData } = supabase.storage
-        .from('spec-sheet-assets')
-        .getPublicUrl(filePath);
       
       // Map file type to the corresponding field
       const fieldMap = {
@@ -206,7 +194,7 @@ function ProductionDetails({
       };
       
       // Update the field with the new URL
-      handleChange(fieldMap[fileType], urlData.publicUrl);
+      handleChange(fieldMap[fileType], publicUrl);
       
     } catch (error) {
       console.error(`Error uploading ${fileType} image:`, error);

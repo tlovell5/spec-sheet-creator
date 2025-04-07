@@ -1,18 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { supabase } from '../../supabaseClient';
+import { supabase, uploadFile, STORAGE_FOLDERS } from '../../supabaseClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faSignature, 
+  faPen, 
+  faUser, 
+  faCalendarAlt, 
   faUpload, 
   faTrash, 
-  faPen, 
-  faEnvelope, 
-  faCheck, 
   faSpinner, 
-  faInfoCircle, 
-  faUser, 
-  faUserTie, 
-  faUserCog
+  faCheck, 
+  faExclamationTriangle
 } from '@fortawesome/free-solid-svg-icons';
 
 function Signatures({ specSheetId }) {
@@ -76,24 +74,16 @@ function Signatures({ specSheetId }) {
     setUploadError('');
     
     try {
-      // Create a unique filename
-      const fileName = `${Date.now()}-${role}-${file.name}`;
+      // Use the enhanced upload function
+      const { success, publicUrl, error } = await uploadFile(file, STORAGE_FOLDERS.SIGNATURES);
       
-      // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from('spec-sheet-assets')
-        .upload(`signatures/${fileName}`, file);
-        
-      if (error) throw error;
-      
-      // Get the public URL
-      const { data: publicUrlData } = supabase.storage
-        .from('spec-sheet-assets')
-        .getPublicUrl(`signatures/${fileName}`);
+      if (!success) {
+        throw error;
+      }
       
       // Update the signature URL and timestamp
       const now = new Date().toISOString();
-      handleInputChange({ target: { name: 'signature_image_url', value: publicUrlData.publicUrl } }, role);
+      handleInputChange({ target: { name: 'signature_image_url', value: publicUrl } }, role);
       handleInputChange({ target: { name: 'signed_at', value: now } }, role);
       
       // Save to database

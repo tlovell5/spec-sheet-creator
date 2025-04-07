@@ -8,12 +8,14 @@ import './index.css'; // Import our Tailwind CSS
 
 function App() {
   useEffect(() => {
-    const fetchData = async () => {
-      const { data, error } = await supabase.from('spec_sheets').select('*');
-      if (error) console.error('Error fetching data:', error);
+    const initializeApp = async () => {
+      // Fetch initial data
+      const { data, error: fetchError } = await supabase.from('spec_sheets').select('*');
+      if (fetchError) console.error('Error fetching data:', fetchError);
       else console.log('Data:', data);
     };
-    fetchData();
+    
+    initializeApp();
   }, []);
 
   return (

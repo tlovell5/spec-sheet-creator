@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { supabase } from '../../supabaseClient';
+import { supabase, uploadFile, STORAGE_FOLDERS } from '../../supabaseClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faBuilding, 
@@ -51,33 +51,19 @@ const CustomerInfo = ({ specSheetData, setSpecSheetData }) => {
     setUploadError('');
     
     try {
-      // Create a unique filename
-      const fileName = `${Date.now()}-${file.name}`;
+      // Use the enhanced upload function
+      const { success, publicUrl, error } = await uploadFile(file, STORAGE_FOLDERS.LOGOS);
       
-      // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from('spec-sheet-assets')
-        .upload(`logos/${fileName}`, file, {
-          upsert: true,
-          cacheControl: '3600'
-        });
-        
-      if (error) {
-        console.error('Error uploading logo:', error);
+      if (!success) {
         throw error;
       }
-      
-      // Get the public URL
-      const { data: publicUrlData } = supabase.storage
-        .from('spec-sheet-assets')
-        .getPublicUrl(`logos/${fileName}`);
       
       // Update the spec sheet data
       setSpecSheetData(prevData => ({
         ...prevData,
         customerInfo: {
           ...prevData.customerInfo,
-          logo: publicUrlData.publicUrl
+          logo: publicUrl
         }
       }));
     } catch (error) {
