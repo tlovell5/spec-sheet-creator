@@ -14,7 +14,7 @@ import {
   faCookie
 } from '@fortawesome/free-solid-svg-icons';
 
-function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom, specSheetData }) {
+function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom, specSheetData, setSpecSheetData }) {
   // State for different tables
   const [wipData, setWipData] = useState({ wip_id: wipId || '', weight: 0, description: '' });
   const [ingredients, setIngredients] = useState([]);
@@ -26,6 +26,7 @@ function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom, specS
   const [totalPercentage, setTotalPercentage] = useState(0);
   const [totalWeight, setTotalWeight] = useState(0);
   const [weightInLbs, setWeightInLbs] = useState(0);
+  const [totalPackagingWeight, setTotalPackagingWeight] = useState(0);
   
   // Load BOM data when component mounts
   useEffect(() => {
@@ -109,6 +110,60 @@ function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom, specS
     setTotalPercentage(totalPct);
     setTotalWeight(totalWt);
   }, [ingredients]);
+  
+  // Calculate total packaging weight and update parent component
+  useEffect(() => {
+    // Calculate total packaging weight
+    const packagingTotal = packaging.reduce((sum, item) => {
+      return sum + (parseFloat(item.weight) || 0);
+    }, 0);
+    
+    // Calculate total inclusion weight
+    const inclusionTotal = inclusions.reduce((sum, item) => {
+      return sum + (parseFloat(item.weight) || 0);
+    }, 0);
+    
+    // Get ingredient weight from ProductIdentification netWeight (in lbs)
+    const ingredientWeightLbs = parseFloat(specSheetData?.productIdentification?.netWeight) || 0;
+    
+    // Convert ingredient weight to grams for consistency
+    const ingredientWeightG = ingredientWeightLbs * 453.592;
+    
+    // Calculate total net weight (sum of all weights)
+    const totalNetWeight = packagingTotal + inclusionTotal + ingredientWeightG;
+    
+    setTotalPackagingWeight(packagingTotal);
+    
+    // Update the parent component's state with all the weight values
+    if (setSpecSheetData) {
+      setSpecSheetData(prevData => {
+        // Create a new object with updated values
+        const updatedData = {
+          ...prevData,
+          productIdentification: {
+            ...prevData.productIdentification,
+            // Don't update netWeight here to avoid circular updates
+          }
+        };
+        
+        // Ensure productionDetails exists
+        if (!updatedData.productionDetails) {
+          updatedData.productionDetails = {};
+        }
+        
+        // Update production details with calculated weights
+        updatedData.productionDetails = {
+          ...updatedData.productionDetails,
+          packaging_weight_g: packagingTotal,
+          inclusion_weight_g: inclusionTotal,
+          ingredient_weight_g: ingredientWeightG,
+          net_weight_g: totalNetWeight // Sum of all weights
+        };
+        
+        return updatedData;
+      });
+    }
+  }, [packaging, inclusions, specSheetData?.productIdentification?.netWeight, setSpecSheetData]);
   
   // Helper functions to create empty rows
   const createEmptyIngredient = () => {
@@ -985,6 +1040,13 @@ function BillOfMaterials({ specSheetId, wipId, unitClaimWeight, weightUom, specS
                 </td>
               </tr>
             ))}
+            <tr className="total-row">
+              <td colSpan="4"><strong>Total:</strong></td>
+              <td>
+                <strong>{totalPackagingWeight > 0 ? totalPackagingWeight.toFixed(2) : '0'} g</strong>
+              </td>
+              <td colSpan="5"></td>
+            </tr>
           </tbody>
         </table>
       </div>

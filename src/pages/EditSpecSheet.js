@@ -75,7 +75,11 @@ function EditSpecSheet() {
     },
     productionDetails: {
       processDescription: '',
-      artworkFiles: []
+      artworkFiles: [],
+      packaging_weight_g: '',
+      inclusion_weight_g: '',
+      ingredient_weight_g: '',
+      net_weight_g: ''
     },
     packoutDetails: {
       unitsPerCase: '',
@@ -184,7 +188,11 @@ function EditSpecSheet() {
           },
           productionDetails: data.production_details || {
             processDescription: '',
-            artworkFiles: []
+            artworkFiles: [],
+            packaging_weight_g: '',
+            inclusion_weight_g: '',
+            ingredient_weight_g: '',
+            net_weight_g: ''
           },
           packoutDetails: {
             unitsPerCase: data.units_per_case || '',
@@ -231,38 +239,30 @@ function EditSpecSheet() {
     setSaving(true);
     
     try {
-      // Map our component structure back to database structure
-      const dbData = {
+      // Extract data for the spec_sheets table
+      const specSheetRecord = {
         id: specSheetData.id,
         status: specSheetData.status,
-        customer_name: specSheetData.customerInfo.companyName,
-        customer_contact: specSheetData.customerInfo.contactName,
-        customer_email: specSheetData.customerInfo.email,
-        customer_phone: specSheetData.customerInfo.phone,
-        customer_address: specSheetData.customerInfo.address,
-        customer_logo: specSheetData.customerInfo.logo,
-        product_name: specSheetData.productIdentification.productName,
-        sku_id: specSheetData.productIdentification.productCode,
-        product_description: specSheetData.productIdentification.productDescription,
-        unit_claim_weight: specSheetData.productIdentification.netWeight,
-        unit_upc: specSheetData.productIdentification.upc,
-        product_image: specSheetData.productIdentification.productImage,
-        // Add other fields as needed
-        units_per_case: specSheetData.packoutDetails.unitsPerCase,
-        cases_per_pallet: specSheetData.packoutDetails.casesPerPallet,
-        // Store complex objects as JSON
-        packaging_claims: specSheetData.packagingClaims,
-        bill_of_materials: specSheetData.billOfMaterials,
-        production_details: specSheetData.productionDetails,
-        mix_instructions: specSheetData.mixInstructions,
-        product_testing: specSheetData.productTesting,
-        equipment_specs: specSheetData.equipmentSpecs,
-        signatures: specSheetData.signatures
+        customer_name: specSheetData.customerInfo?.companyName,
+        customer_contact: specSheetData.customerInfo?.contactName,
+        customer_email: specSheetData.customerInfo?.email,
+        customer_phone: specSheetData.customerInfo?.phone,
+        customer_address: specSheetData.customerInfo?.address,
+        product_name: specSheetData.productIdentification?.productName,
+        sku_id: specSheetData.productIdentification?.productCode,
+        product_description: specSheetData.productIdentification?.description,
+        unit_claim_weight: specSheetData.productIdentification?.netWeight,
+        unit_upc: specSheetData.productIdentification?.upc,
+        product_image: specSheetData.productIdentification?.productImage,
+        units_per_case: specSheetData.packoutDetails?.unitsPerCase,
+        cases_per_pallet: specSheetData.packoutDetails?.casesPerPallet,
+        pallet_configuration: specSheetData.packoutDetails?.palletConfiguration,
+        last_updated: new Date().toISOString()
       };
       
       const { error } = await supabase
         .from('spec_sheets')
-        .update(dbData)
+        .update(specSheetRecord)
         .eq('id', specSheetData.id);
 
       if (error) {
@@ -357,22 +357,23 @@ function EditSpecSheet() {
     }
   };
 
-  // Function to get appropriate icon for each section
+  // Get section icon based on section name
   const getSectionIcon = (section) => {
-    switch(section) {
-      case 'customerInfo': return faBuilding;
-      case 'productIdentification': return faBarcode;
-      case 'packagingClaims': return faTag;
-      case 'billOfMaterials': return faClipboardList;
-      case 'productionDetails': return faCogs;
-      case 'packoutDetails': return faBoxes;
-      case 'mixInstructions': return faBlender;
-      case 'productTesting': return faFlask;
-      case 'equipmentSpecs': return faTools;
-      case 'signatures': return faSignature;
-      case 'activityLog': return faHistory;
-      default: return faClipboardList;
-    }
+    const iconMap = {
+      customerInfo: faBuilding,
+      productIdentification: faBarcode,
+      packagingClaims: faTag,
+      billOfMaterials: faClipboardList,
+      productionDetails: faCogs,
+      packoutDetails: faBoxes,
+      mixInstructions: faBlender,
+      productTesting: faFlask,
+      equipmentSpecs: faTools,
+      signatures: faSignature,
+      activityLog: faHistory
+    };
+    
+    return iconMap[section] || faInfoCircle; // Default to info icon if not found
   };
 
   // Function to expand all sections
@@ -813,7 +814,19 @@ function EditSpecSheet() {
               Document the production process details. Include standard batch sizes, estimated production times, and any special considerations.
             </div>
             <ProductionDetails 
-              specSheetData={specSheetData} 
+              specSheetId={specSheetData.id || ''}
+              unitUpc={specSheetData.productIdentification?.upc}
+              lotCodeFormat={specSheetData.productIdentification?.lotCodeFormat}
+              shelfLifeYears={specSheetData.productIdentification?.shelfLifeYears || 0}
+              shelfLifeMonths={specSheetData.productIdentification?.shelfLifeMonths || 0}
+              shelfLife={specSheetData.productIdentification?.shelfLife || 0}
+              shelfLifeUnit={specSheetData.productIdentification?.shelfLifeUnit || 'months'}
+              unitClaimWeight={specSheetData.productIdentification?.netWeight}
+              weightUom={specSheetData.productIdentification?.weightUom}
+              packagingWeightG={specSheetData.productionDetails?.packaging_weight_g}
+              inclusionWeightG={specSheetData.productionDetails?.inclusion_weight_g}
+              ingredientWeightG={specSheetData.productionDetails?.ingredient_weight_g}
+              netWeightG={specSheetData.productionDetails?.net_weight_g}
               setSpecSheetData={setSpecSheetData} 
             />
           </div>

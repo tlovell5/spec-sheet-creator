@@ -202,74 +202,350 @@ const PackagingClaims = ({ formData = {}, setFormData }) => {
     ).length || 0;
   };
 
+  // CSS styles for horizontal layout
+  const styles = {
+    packagingClaimsContainer: {
+      padding: '20px',
+      backgroundColor: 'white',
+      borderRadius: '10px',
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.08)',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px',
+    },
+    claimsSearchBar: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '12px 16px',
+      backgroundColor: 'white',
+      borderRadius: '10px',
+      border: '1px solid #e5e7eb',
+      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+    },
+    searchInput: {
+      display: 'flex',
+      alignItems: 'center',
+      position: 'relative',
+      flex: '1',
+      marginRight: '15px',
+    },
+    searchIcon: {
+      position: 'absolute',
+      left: '12px',
+      color: '#6b7280',
+    },
+    formControl: {
+      paddingLeft: '36px',
+      borderRadius: '6px',
+      border: '1px solid #d1d5db',
+      padding: '8px 12px',
+      width: '100%',
+    },
+    clearSearch: {
+      position: 'absolute',
+      right: '12px',
+      background: 'none',
+      border: 'none',
+      color: '#6b7280',
+      cursor: 'pointer',
+    },
+    selectedSummary: {
+      display: 'flex',
+      alignItems: 'center',
+      fontWeight: '500',
+    },
+    selectedCount: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#2e7d32',
+      color: 'white',
+      borderRadius: '50%',
+      width: '24px',
+      height: '24px',
+      fontSize: '0.85rem',
+      marginRight: '8px',
+    },
+    claimsGridLayout: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px',
+      width: '100%',
+    },
+    claimsSection: {
+      backgroundColor: 'white',
+      borderRadius: '10px',
+      border: '1px solid #e5e7eb',
+      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+      width: '100%',
+    },
+    sectionHeader: {
+      padding: '12px 16px',
+      borderBottom: '1px solid #e5e7eb',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: '#f9fafb',
+      borderTopLeftRadius: '10px',
+      borderTopRightRadius: '10px',
+    },
+    headerLeft: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      fontWeight: '600',
+    },
+    sectionIcon: {
+      color: '#2e7d32',
+    },
+    headerRight: {
+      display: 'flex',
+      alignItems: 'center',
+    },
+    selectedBadge: {
+      backgroundColor: 'rgba(46, 125, 50, 0.1)',
+      color: '#2e7d32',
+      borderRadius: '20px',
+      padding: '4px 10px',
+      fontSize: '0.85rem',
+      fontWeight: '500',
+    },
+    sectionContent: {
+      padding: '16px',
+      overflowX: 'auto',
+      width: '100%',
+    },
+    highlightItem: {
+      marginBottom: '12px',
+    },
+    infoMessage: {
+      display: 'flex',
+      alignItems: 'flex-start',
+      gap: '10px',
+      backgroundColor: 'rgba(2, 136, 209, 0.08)',
+      padding: '12px',
+      borderRadius: '6px',
+      fontSize: '0.9rem',
+      color: '#0277bd',
+    },
+    allergenGrid: {
+      display: 'flex',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: '8px',
+      width: '100%',
+    },
+    claimsGrid: {
+      display: 'flex',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: '8px',
+      width: '100%',
+    },
+    checkboxItem: {
+      padding: '6px 10px',
+      borderRadius: '6px',
+      transition: 'background-color 0.2s',
+      width: 'auto',
+      minWidth: '150px',
+      maxWidth: '200px',
+      flex: '1 0 auto',
+      marginBottom: '4px',
+    },
+    selectedClaim: {
+      backgroundColor: 'rgba(46, 125, 50, 0.1)',
+      border: '1px solid rgba(46, 125, 50, 0.2)',
+    },
+    formCheck: {
+      display: 'flex',
+      alignItems: 'flex-start',
+    },
+    formCheckInput: {
+      marginTop: '3px',
+      marginRight: '10px',
+    },
+    formCheckLabel: {
+      display: 'flex',
+      flexDirection: 'column',
+      fontSize: '0.9rem',
+    },
+    checkboxLabel: {
+      fontWeight: '500',
+      marginBottom: '2px',
+      fontSize: '0.9rem',
+    },
+    checkboxHelp: {
+      fontSize: '0.8rem',
+      color: '#6b7280',
+    },
+    customClaimsContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%',
+    },
+    customClaimsInputArea: {
+      marginBottom: '16px',
+      width: '100%',
+    },
+    customClaimsInput: {
+      display: 'flex',
+      gap: '10px',
+      marginTop: '12px',
+    },
+    btnPrimary: {
+      backgroundColor: '#2e7d32',
+      color: 'white',
+      border: 'none',
+      borderRadius: '6px',
+      padding: '8px 16px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      cursor: 'pointer',
+    },
+    customClaimsListContainer: {
+      flex: '1',
+    },
+    customClaimsList: {
+      display: 'flex',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: '8px',
+      width: '100%',
+    },
+    customClaimItem: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: '#f9fafb',
+      padding: '6px 10px',
+      borderRadius: '6px',
+      border: '1px solid #e5e7eb',
+      minWidth: '150px',
+      maxWidth: '200px',
+      flex: '1 0 auto',
+      marginBottom: '4px',
+    },
+    customClaimText: {
+      fontWeight: '500',
+    },
+    removeButton: {
+      background: 'none',
+      border: 'none',
+      color: '#ef4444',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '24px',
+      height: '24px',
+      borderRadius: '50%',
+    },
+    emptyClaims: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px',
+      backgroundColor: '#f9fafb',
+      borderRadius: '6px',
+      color: '#6b7280',
+      textAlign: 'center',
+    },
+    emptyIcon: {
+      fontSize: '1.5rem',
+      marginBottom: '12px',
+      opacity: '0.5',
+    },
+    noItemsMessage: {
+      fontWeight: '500',
+      marginBottom: '4px',
+    },
+    emptyHelp: {
+      fontSize: '0.85rem',
+    },
+    noResults: {
+      padding: '20px',
+      backgroundColor: '#f9fafb',
+      borderRadius: '10px',
+      textAlign: 'center',
+      color: '#6b7280',
+      marginTop: '20px',
+    },
+  };
+
   return (
-    <div className="packaging-claims-container">
+    <div style={styles.packagingClaimsContainer}>
       {/* Search bar */}
-      <div className="claims-search-bar">
-        <div className="search-input">
-          <FontAwesomeIcon icon={faSearch} className="search-icon" />
+      <div style={styles.claimsSearchBar}>
+        <div style={styles.searchInput}>
+          <FontAwesomeIcon icon={faSearch} style={styles.searchIcon} />
           <input
             type="text"
             placeholder="Search for claims..."
             value={searchTerm}
             onChange={handleSearchChange}
-            className="form-control"
+            style={styles.formControl}
           />
           {searchTerm && (
-            <button className="clear-search" onClick={clearSearch}>
+            <button style={styles.clearSearch} onClick={clearSearch}>
               <FontAwesomeIcon icon={faTimes} />
             </button>
           )}
         </div>
-        <div className="selected-summary">
-          <span className="selected-count">{totalSelectedClaims}</span>
+        <div style={styles.selectedSummary}>
+          <span style={styles.selectedCount}>{totalSelectedClaims}</span>
           claims selected
         </div>
       </div>
 
-      {/* Claims grid layout */}
-      <div className="claims-grid-layout">
+      {/* Claims grid layout - now horizontal */}
+      <div style={styles.claimsGridLayout}>
         {/* Allergens Section */}
-        <div className="claims-section">
-          <div className="section-header">
-            <div className="header-left">
-              <FontAwesomeIcon icon={faShieldAlt} className="section-icon" />
+        <div style={styles.claimsSection}>
+          <div style={styles.sectionHeader}>
+            <div style={styles.headerLeft}>
+              <FontAwesomeIcon icon={faShieldAlt} style={styles.sectionIcon} />
               <span>Allergen Claims</span>
             </div>
-            <div className="header-right">
+            <div style={styles.headerRight}>
               {countSelectedByCategory('allergens') > 0 && (
-                <span className="selected-badge">
+                <span style={styles.selectedBadge}>
                   {countSelectedByCategory('allergens')} selected
                 </span>
               )}
             </div>
           </div>
           
-          <div className="section-content">
-            <div className="highlight-item">
-              <div className="info-message">
+          <div style={styles.sectionContent}>
+            <div style={styles.highlightItem}>
+              <div style={styles.infoMessage}>
                 <FontAwesomeIcon icon={faInfoCircle} />
                 <span>Select all allergens that apply to your product. These will be clearly displayed on your spec sheet.</span>
               </div>
             </div>
-            <div className="allergen-grid">
+            <div style={styles.allergenGrid}>
               {filterClaimsBySearch(allergenOptions).map((allergen) => (
                 <div 
                   key={allergen.id} 
-                  className={`checkbox-item ${selectedAllergens.includes(allergen.id) ? 'selected-claim' : ''}`}
+                  style={{
+                    ...styles.checkboxItem,
+                    ...(selectedAllergens.includes(allergen.id) ? styles.selectedClaim : {})
+                  }}
                 >
-                  <div className="form-check">
+                  <div style={styles.formCheck}>
                     <input
                       type="checkbox"
-                      className="form-check-input"
+                      style={styles.formCheckInput}
                       id={allergen.id}
                       checked={selectedAllergens.includes(allergen.id)}
                       onChange={() => handleAllergenChange(allergen.id)}
                     />
-                    <label className="form-check-label" htmlFor={allergen.id}>
+                    <label style={styles.formCheckLabel} htmlFor={allergen.id}>
                       <div>
-                        <span className="checkbox-label">{allergen.label}</span>
-                        <span className="checkbox-help">{allergen.help}</span>
+                        <span style={styles.checkboxLabel}>{allergen.label}</span>
+                        <span style={styles.checkboxHelp}>{allergen.help}</span>
                       </div>
                     </label>
                   </div>
@@ -280,40 +556,43 @@ const PackagingClaims = ({ formData = {}, setFormData }) => {
         </div>
 
         {/* Dietary Claims Section */}
-        <div className="claims-section">
-          <div className="section-header">
-            <div className="header-left">
-              <FontAwesomeIcon icon={faHeartbeat} className="section-icon" />
+        <div style={styles.claimsSection}>
+          <div style={styles.sectionHeader}>
+            <div style={styles.headerLeft}>
+              <FontAwesomeIcon icon={faHeartbeat} style={styles.sectionIcon} />
               <span>Dietary Claims</span>
             </div>
-            <div className="header-right">
+            <div style={styles.headerRight}>
               {countSelectedByCategory('dietary') > 0 && (
-                <span className="selected-badge">
+                <span style={styles.selectedBadge}>
                   {countSelectedByCategory('dietary')} selected
                 </span>
               )}
             </div>
           </div>
           
-          <div className="section-content">
-            <div className="claims-grid">
+          <div style={styles.sectionContent}>
+            <div style={styles.claimsGrid}>
               {filterClaimsBySearch(packagingClaimOptions.dietary).map((claim) => (
                 <div 
                   key={claim.id} 
-                  className={`checkbox-item ${selectedPackagingClaims.includes(claim.id) ? 'selected-claim' : ''}`}
+                  style={{
+                    ...styles.checkboxItem,
+                    ...(selectedPackagingClaims.includes(claim.id) ? styles.selectedClaim : {})
+                  }}
                 >
-                  <div className="form-check">
+                  <div style={styles.formCheck}>
                     <input
                       type="checkbox"
-                      className="form-check-input"
+                      style={styles.formCheckInput}
                       id={claim.id}
                       checked={selectedPackagingClaims.includes(claim.id)}
                       onChange={() => handlePackagingClaimChange(claim.id)}
                     />
-                    <label className="form-check-label" htmlFor={claim.id}>
+                    <label style={styles.formCheckLabel} htmlFor={claim.id}>
                       <div>
-                        <span className="checkbox-label">{claim.label}</span>
-                        <span className="checkbox-help">{claim.help}</span>
+                        <span style={styles.checkboxLabel}>{claim.label}</span>
+                        <span style={styles.checkboxHelp}>{claim.help}</span>
                       </div>
                     </label>
                   </div>
@@ -324,40 +603,43 @@ const PackagingClaims = ({ formData = {}, setFormData }) => {
         </div>
 
         {/* Certifications Section */}
-        <div className="claims-section">
-          <div className="section-header">
-            <div className="header-left">
-              <FontAwesomeIcon icon={faCertificate} className="section-icon" />
+        <div style={styles.claimsSection}>
+          <div style={styles.sectionHeader}>
+            <div style={styles.headerLeft}>
+              <FontAwesomeIcon icon={faCertificate} style={styles.sectionIcon} />
               <span>Certifications</span>
             </div>
-            <div className="header-right">
+            <div style={styles.headerRight}>
               {countSelectedByCategory('certifications') > 0 && (
-                <span className="selected-badge">
+                <span style={styles.selectedBadge}>
                   {countSelectedByCategory('certifications')} selected
                 </span>
               )}
             </div>
           </div>
           
-          <div className="section-content">
-            <div className="claims-grid">
+          <div style={styles.sectionContent}>
+            <div style={styles.claimsGrid}>
               {filterClaimsBySearch(packagingClaimOptions.certifications).map((claim) => (
                 <div 
                   key={claim.id} 
-                  className={`checkbox-item ${selectedPackagingClaims.includes(claim.id) ? 'selected-claim' : ''}`}
+                  style={{
+                    ...styles.checkboxItem,
+                    ...(selectedPackagingClaims.includes(claim.id) ? styles.selectedClaim : {})
+                  }}
                 >
-                  <div className="form-check">
+                  <div style={styles.formCheck}>
                     <input
                       type="checkbox"
-                      className="form-check-input"
+                      style={styles.formCheckInput}
                       id={claim.id}
                       checked={selectedPackagingClaims.includes(claim.id)}
                       onChange={() => handlePackagingClaimChange(claim.id)}
                     />
-                    <label className="form-check-label" htmlFor={claim.id}>
+                    <label style={styles.formCheckLabel} htmlFor={claim.id}>
                       <div>
-                        <span className="checkbox-label">{claim.label}</span>
-                        <span className="checkbox-help">{claim.help}</span>
+                        <span style={styles.checkboxLabel}>{claim.label}</span>
+                        <span style={styles.checkboxHelp}>{claim.help}</span>
                       </div>
                     </label>
                   </div>
@@ -368,40 +650,43 @@ const PackagingClaims = ({ formData = {}, setFormData }) => {
         </div>
 
         {/* Ingredients Section */}
-        <div className="claims-section">
-          <div className="section-header">
-            <div className="header-left">
-              <FontAwesomeIcon icon={faCheck} className="section-icon" />
+        <div style={styles.claimsSection}>
+          <div style={styles.sectionHeader}>
+            <div style={styles.headerLeft}>
+              <FontAwesomeIcon icon={faCheck} style={styles.sectionIcon} />
               <span>Ingredient Claims</span>
             </div>
-            <div className="header-right">
+            <div style={styles.headerRight}>
               {countSelectedByCategory('ingredients') > 0 && (
-                <span className="selected-badge">
+                <span style={styles.selectedBadge}>
                   {countSelectedByCategory('ingredients')} selected
                 </span>
               )}
             </div>
           </div>
           
-          <div className="section-content">
-            <div className="claims-grid">
+          <div style={styles.sectionContent}>
+            <div style={styles.claimsGrid}>
               {filterClaimsBySearch(packagingClaimOptions.ingredients).map((claim) => (
                 <div 
                   key={claim.id} 
-                  className={`checkbox-item ${selectedPackagingClaims.includes(claim.id) ? 'selected-claim' : ''}`}
+                  style={{
+                    ...styles.checkboxItem,
+                    ...(selectedPackagingClaims.includes(claim.id) ? styles.selectedClaim : {})
+                  }}
                 >
-                  <div className="form-check">
+                  <div style={styles.formCheck}>
                     <input
                       type="checkbox"
-                      className="form-check-input"
+                      style={styles.formCheckInput}
                       id={claim.id}
                       checked={selectedPackagingClaims.includes(claim.id)}
                       onChange={() => handlePackagingClaimChange(claim.id)}
                     />
-                    <label className="form-check-label" htmlFor={claim.id}>
+                    <label style={styles.formCheckLabel} htmlFor={claim.id}>
                       <div>
-                        <span className="checkbox-label">{claim.label}</span>
-                        <span className="checkbox-help">{claim.help}</span>
+                        <span style={styles.checkboxLabel}>{claim.label}</span>
+                        <span style={styles.checkboxHelp}>{claim.help}</span>
                       </div>
                     </label>
                   </div>
@@ -412,40 +697,43 @@ const PackagingClaims = ({ formData = {}, setFormData }) => {
         </div>
 
         {/* Sustainability Section */}
-        <div className="claims-section">
-          <div className="section-header">
-            <div className="header-left">
-              <FontAwesomeIcon icon={faRecycle} className="section-icon" />
+        <div style={styles.claimsSection}>
+          <div style={styles.sectionHeader}>
+            <div style={styles.headerLeft}>
+              <FontAwesomeIcon icon={faRecycle} style={styles.sectionIcon} />
               <span>Sustainability Claims</span>
             </div>
-            <div className="header-right">
+            <div style={styles.headerRight}>
               {countSelectedByCategory('sustainability') > 0 && (
-                <span className="selected-badge">
+                <span style={styles.selectedBadge}>
                   {countSelectedByCategory('sustainability')} selected
                 </span>
               )}
             </div>
           </div>
           
-          <div className="section-content">
-            <div className="claims-grid">
+          <div style={styles.sectionContent}>
+            <div style={styles.claimsGrid}>
               {filterClaimsBySearch(packagingClaimOptions.sustainability).map((claim) => (
                 <div 
                   key={claim.id} 
-                  className={`checkbox-item ${selectedPackagingClaims.includes(claim.id) ? 'selected-claim' : ''}`}
+                  style={{
+                    ...styles.checkboxItem,
+                    ...(selectedPackagingClaims.includes(claim.id) ? styles.selectedClaim : {})
+                  }}
                 >
-                  <div className="form-check">
+                  <div style={styles.formCheck}>
                     <input
                       type="checkbox"
-                      className="form-check-input"
+                      style={styles.formCheckInput}
                       id={claim.id}
                       checked={selectedPackagingClaims.includes(claim.id)}
                       onChange={() => handlePackagingClaimChange(claim.id)}
                     />
-                    <label className="form-check-label" htmlFor={claim.id}>
+                    <label style={styles.formCheckLabel} htmlFor={claim.id}>
                       <div>
-                        <span className="checkbox-label">{claim.label}</span>
-                        <span className="checkbox-help">{claim.help}</span>
+                        <span style={styles.checkboxLabel}>{claim.label}</span>
+                        <span style={styles.checkboxHelp}>{claim.help}</span>
                       </div>
                     </label>
                   </div>
@@ -456,39 +744,43 @@ const PackagingClaims = ({ formData = {}, setFormData }) => {
         </div>
 
         {/* Custom Claims Section */}
-        <div className="claims-section">
-          <div className="section-header">
-            <div className="header-left">
-              <FontAwesomeIcon icon={faPlus} className="section-icon" />
+        <div style={styles.claimsSection}>
+          <div style={styles.sectionHeader}>
+            <div style={styles.headerLeft}>
+              <FontAwesomeIcon icon={faPlus} style={styles.sectionIcon} />
               <span>Custom Claims</span>
             </div>
-            <div className="header-right">
+            <div style={styles.headerRight}>
               {customClaims.length > 0 && (
-                <span className="selected-badge">
+                <span style={styles.selectedBadge}>
                   {customClaims.length} added
                 </span>
               )}
             </div>
           </div>
           
-          <div className="section-content">
-            <div className="custom-claims-container">
-              <div className="custom-claims-input-area">
-                <div className="info-message">
+          <div style={styles.sectionContent}>
+            <div style={styles.customClaimsContainer}>
+              <div style={styles.customClaimsInputArea}>
+                <div style={styles.infoMessage}>
                   <FontAwesomeIcon icon={faInfoCircle} />
                   <span>Add any additional claims that are not listed in the categories above.</span>
                 </div>
-                <div className="custom-claims-input">
+                <div style={styles.customClaimsInput}>
                   <input
                     type="text"
-                    className="form-control"
+                    style={styles.formControl}
                     placeholder="Enter custom claim..."
                     value={newCustomClaim}
                     onChange={handleCustomClaimChange}
                     onKeyPress={handleKeyPress}
                   />
                   <button 
-                    className="btn btn-primary" 
+                    style={{
+                      ...styles.btnPrimary,
+                      opacity: !newCustomClaim.trim() ? '0.65' : '1',
+                      cursor: !newCustomClaim.trim() ? 'not-allowed' : 'pointer'
+                    }} 
                     onClick={addCustomClaim}
                     disabled={!newCustomClaim.trim()}
                   >
@@ -497,16 +789,16 @@ const PackagingClaims = ({ formData = {}, setFormData }) => {
                 </div>
               </div>
               
-              <div className="custom-claims-list-container">
-                <div className="custom-claims-list">
+              <div style={styles.customClaimsListContainer}>
+                <div style={styles.customClaimsList}>
                   {customClaims.length > 0 ? (
                     customClaims.map((claim, index) => (
-                      <div key={index} className="custom-claim-item">
-                        <div className="custom-claim-text">
+                      <div key={index} style={styles.customClaimItem}>
+                        <div style={styles.customClaimText}>
                           {claim}
                         </div>
                         <button 
-                          className="remove-button"
+                          style={styles.removeButton}
                           onClick={() => removeCustomClaim(index)}
                         >
                           <FontAwesomeIcon icon={faTimes} />
@@ -514,10 +806,10 @@ const PackagingClaims = ({ formData = {}, setFormData }) => {
                       </div>
                     ))
                   ) : (
-                    <div className="empty-claims">
-                      <FontAwesomeIcon icon={faPlus} className="empty-icon" />
-                      <p className="no-items-message">No custom claims added yet</p>
-                      <p className="empty-help">Add custom claims using the form on the left</p>
+                    <div style={styles.emptyClaims}>
+                      <FontAwesomeIcon icon={faPlus} style={styles.emptyIcon} />
+                      <p style={styles.noItemsMessage}>No custom claims added yet</p>
+                      <p style={styles.emptyHelp}>Add custom claims using the form above</p>
                     </div>
                   )}
                 </div>
@@ -528,7 +820,7 @@ const PackagingClaims = ({ formData = {}, setFormData }) => {
 
         {/* No results message */}
         {searchTerm && !hasSearchResults && (
-          <div className="no-results">
+          <div style={styles.noResults}>
             No claims found matching "{searchTerm}". Try a different search term.
           </div>
         )}

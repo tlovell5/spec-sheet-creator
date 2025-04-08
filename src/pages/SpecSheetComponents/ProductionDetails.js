@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase, uploadFile, STORAGE_FOLDERS } from '../../supabaseClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -21,13 +21,22 @@ function ProductionDetails({
   lotCodeFormat, 
   shelfLifeYears, 
   shelfLifeMonths,
-  unitClaimWeight
+  shelfLife,
+  shelfLifeUnit,
+  unitClaimWeight,
+  weightUom,
+  packagingWeightG,
+  inclusionWeightG,
+  ingredientWeightG,
+  netWeightG,
+  setSpecSheetData,
+  specSheetData
 }) {
   const [productionDetails, setProductionDetails] = useState({
-    packaging_weight_g: 0,
-    inclusion_weight_g: 0,
-    ingredient_weight_g: 0,
-    net_weight_g: 0,
+    packaging_weight_g: packagingWeightG || 0,
+    inclusion_weight_g: inclusionWeightG || 0,
+    ingredient_weight_g: ingredientWeightG || 0,
+    net_weight_g: netWeightG || 0,
     front_artwork_url: '',
     back_artwork_url: '',
     lot_code_placement_url: '',
@@ -41,82 +50,109 @@ function ProductionDetails({
     inclusion: false
   });
 
+  // Calculate net weight whenever ingredient, packaging, or inclusion weights change
+  const calculateNetWeight = useCallback(() => {
+    const packaging = parseFloat(productionDetails.packaging_weight_g || 0);
+    const inclusion = parseFloat(productionDetails.inclusion_weight_g || 0);
+    const ingredient = parseFloat(productionDetails.ingredient_weight_g || 0);
+    
+    return (packaging + inclusion + ingredient).toFixed(2);
+  }, [productionDetails.packaging_weight_g, productionDetails.inclusion_weight_g, productionDetails.ingredient_weight_g]);
+
+  // Update local state when props change
+  useEffect(() => {
+    setProductionDetails(prevState => ({
+      ...prevState,
+      packaging_weight_g: packagingWeightG !== undefined ? packagingWeightG : prevState.packaging_weight_g || 0,
+      inclusion_weight_g: inclusionWeightG !== undefined ? inclusionWeightG : prevState.inclusion_weight_g || 0,
+      ingredient_weight_g: ingredientWeightG !== undefined ? ingredientWeightG : prevState.ingredient_weight_g || 0
+    }));
+  }, [packagingWeightG, inclusionWeightG, ingredientWeightG]);
+  
+  // Update net weight whenever weights change
+  useEffect(() => {
+    setProductionDetails(prevState => ({
+      ...prevState,
+      net_weight_g: calculateNetWeight()
+    }));
+  }, [calculateNetWeight]);
+
   // Fetch production details when component mounts
   useEffect(() => {
     const fetchProductionDetails = async () => {
-      if (!specSheetId) return;
+      if (!specSheetId || typeof specSheetId !== 'string' || specSheetId.length < 10) {
+        console.log('Invalid specSheetId, skipping database operations');
+        return;
+      }
       
-      const { data, error } = await supabase
-        .from('production_details')
-        .select('*')
-        .eq('spec_sheet_id', specSheetId)
-        .single();
-      
-      if (error) {
-        if (error.code !== 'PGRST116') { // PGRST116 is "no rows returned" error
-          console.error('Error fetching production details:', error);
-        }
-        
-        // If no data exists, create a new record
-        const ingredientWeightG = convertToGrams(unitClaimWeight);
-        
-        const newProductionDetails = {
-          spec_sheet_id: specSheetId,
-          packaging_weight_g: 0,
-          inclusion_weight_g: 0,
-          ingredient_weight_g: ingredientWeightG,
-          net_weight_g: ingredientWeightG,
-          front_artwork_url: '',
-          back_artwork_url: '',
-          lot_code_placement_url: '',
-          inclusion_image_url: ''
-        };
-        
-        const { data: newData, error: insertError } = await supabase
+      try {
+        const { data, error } = await supabase
           .from('production_details')
-          .insert([newProductionDetails])
-          .select();
+          .select('*')
+          .eq('spec_sheet_id', specSheetId)
+          .single();
         
-        if (insertError) {
-          console.error('Error creating production details:', insertError);
-        } else if (newData && newData.length > 0) {
-          setProductionDetails(newData[0]);
+        if (error) {
+          if (error.code !== 'PGRST116') { // PGRST116 is "no rows returned" error
+            console.error('Error fetching production details:', error);
+          }
+          
+          // If no data exists, create a new record
+          const newProductionDetails = {
+            spec_sheet_id: specSheetId,
+            packaging_weight_g: packagingWeightG || 0,
+            inclusion_weight_g: inclusionWeightG || 0,
+            ingredient_weight_g: ingredientWeightG || 0,
+            net_weight_g: netWeightG || 0,
+            front_artwork_url: '',
+            back_artwork_url: '',
+            lot_code_placement_url: '',
+            inclusion_image_url: ''
+          };
+          
+          const { data: newData, error: insertError } = await supabase
+            .from('production_details')
+            .insert([newProductionDetails])
+            .select();
+          
+          if (insertError) {
+            console.error('Error creating production details:', insertError);
+          } else if (newData && newData.length > 0) {
+            setProductionDetails(newData[0]);
+          }
+        } else if (data) {
+          setProductionDetails(data);
         }
-      } else if (data) {
-        setProductionDetails(data);
+      } catch (err) {
+        console.error('Unexpected error in fetchProductionDetails:', err);
       }
     };
     
     fetchProductionDetails();
-  }, [specSheetId, unitClaimWeight]);
+  }, [specSheetId, packagingWeightG, inclusionWeightG, ingredientWeightG, netWeightG]);
 
-  // Update ingredient weight when unit claim weight changes
+  // Update production details when they are passed from parent component
   useEffect(() => {
-    if (unitClaimWeight) {
-      const ingredientWeightG = convertToGrams(unitClaimWeight);
-      
-      setProductionDetails(prev => {
-        const netWeight = ingredientWeightG + 
-          (prev.packaging_weight_g || 0) + 
-          (prev.inclusion_weight_g || 0);
-        
-        return {
-          ...prev,
-          ingredient_weight_g: ingredientWeightG,
-          net_weight_g: netWeight
-        };
+    if (!setSpecSheetData) return;
+    
+    const timer = setTimeout(() => {
+      setSpecSheetData(prevData => {
+        // Only update if we have data to update with
+        if (productionDetails && Object.keys(productionDetails).length > 0) {
+          return {
+            ...prevData,
+            productionDetails: {
+              ...prevData.productionDetails,
+              ...productionDetails
+            }
+          };
+        }
+        return prevData;
       });
-      
-      // Save the updated values
-      saveProductionDetails({
-        ...productionDetails,
-        ingredient_weight_g: ingredientWeightG,
-        net_weight_g: ingredientWeightG + 
-          (productionDetails.packaging_weight_g || 0) + 
-          (productionDetails.inclusion_weight_g || 0)
-      });
-    }
-  }, [unitClaimWeight]);
+    }, 0);
+    
+    return () => clearTimeout(timer);
+  }, [productionDetails, setSpecSheetData]);
 
   // Helper function to convert weight to grams
   const convertToGrams = (weight, uom = 'g') => {
@@ -157,15 +193,22 @@ function ProductionDetails({
 
   // Save production details to database
   const saveProductionDetails = async (details) => {
-    if (!specSheetId) return;
+    if (!specSheetId || typeof specSheetId !== 'string' || specSheetId.length < 10) {
+      console.log('Invalid specSheetId, skipping database operations');
+      return;
+    }
     
-    const { error } = await supabase
-      .from('production_details')
-      .update(details)
-      .eq('spec_sheet_id', specSheetId);
-    
-    if (error) {
-      console.error('Error saving production details:', error);
+    try {
+      const { error } = await supabase
+        .from('production_details')
+        .update(details)
+        .eq('spec_sheet_id', specSheetId);
+      
+      if (error) {
+        console.error('Error saving production details:', error);
+      }
+    } catch (err) {
+      console.error('Unexpected error in saveProductionDetails:', err);
     }
   };
 
@@ -233,7 +276,7 @@ function ProductionDetails({
             <div className="info-card-label">Shelf Life</div>
             <div className="info-card-value">
               <FontAwesomeIcon icon={faCalendarAlt} className="mr-2" />
-              {`${shelfLifeYears || 0} years, ${shelfLifeMonths || 0} months`}
+              {shelfLife ? `${shelfLife} ${shelfLifeUnit}` : `${shelfLifeYears || 0} years, ${shelfLifeMonths || 0} months`}
             </div>
           </div>
         </div>
@@ -254,11 +297,13 @@ function ProductionDetails({
             <input
               type="number"
               id="packaging_weight_g"
-              className="weight-card-input"
+              className="weight-card-input calculated-field"
               value={productionDetails.packaging_weight_g || ''}
-              onChange={(e) => handleChange('packaging_weight_g', Number(e.target.value))}
-              placeholder="Enter weight in grams"
+              readOnly
+              disabled
+              placeholder="Auto-calculated from Bill of Materials"
             />
+            <div className="field-help">Automatically calculated from packaging weights in Bill of Materials</div>
           </div>
           
           <div className="weight-card">
@@ -269,11 +314,13 @@ function ProductionDetails({
             <input
               type="number"
               id="inclusion_weight_g"
-              className="weight-card-input"
+              className="weight-card-input calculated-field"
               value={productionDetails.inclusion_weight_g || ''}
-              onChange={(e) => handleChange('inclusion_weight_g', Number(e.target.value))}
-              placeholder="Enter weight in grams"
+              readOnly
+              disabled
+              placeholder="Auto-calculated from Bill of Materials"
             />
+            <div className="field-help">Automatically calculated from inclusion weights in Bill of Materials</div>
           </div>
           
           <div className="weight-card">
@@ -285,25 +332,27 @@ function ProductionDetails({
               type="number"
               id="ingredient_weight_g"
               className="weight-card-input calculated-field"
-              value={productionDetails.ingredient_weight_g || ''}
+              value={productionDetails.ingredient_weight_g ? parseFloat(productionDetails.ingredient_weight_g).toFixed(2) : ''}
               disabled
               placeholder="Calculated automatically"
             />
+            <div className="field-help">Automatically calculated from WIP weight in Bill of Materials (converted to grams)</div>
           </div>
           
           <div className="weight-card">
             <div className="weight-card-header">
-              <div className="weight-card-label">Unit Packaging Claim Weight (g)</div>
+              <div className="weight-card-label">Unit Net Weight (g)</div>
               <FontAwesomeIcon icon={faTag} className="weight-card-icon" />
             </div>
             <input
               type="number"
               id="net_weight_g"
               className="weight-card-input calculated-field"
-              value={productionDetails.net_weight_g || ''}
+              value={productionDetails.net_weight_g ? parseFloat(productionDetails.net_weight_g).toFixed(2) : ''}
               disabled
               placeholder="Calculated automatically"
             />
+            <div className="field-help">Total weight: sum of Packaging, Inclusion, and Ingredient weights</div>
           </div>
         </div>
       </div>
