@@ -5,65 +5,66 @@ const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Storage bucket name
-export const STORAGE_BUCKET = 'spec-sheets';
-
-// Define folders within the bucket
-export const STORAGE_FOLDERS = {
-  LOGOS: 'logos',
+// Define storage buckets
+export const STORAGE_BUCKETS = {
+  CUSTOMER_LOGOS: 'customer-logos',
   PRODUCT_IMAGES: 'product-images',
-  PRODUCTION_DETAILS: 'production-details',
-  SIGNATURES: 'signatures'
+  ARTWORK_FILES: 'artwork-files',
+  MIX_INSTRUCTION_IMAGES: 'mix-instruction-images'
 };
 
-// Mock file upload function that simulates successful uploads
-export const uploadFile = async (file, folder, options = {}) => {
-  if (!file) return { success: false, error: 'No file provided' };
-  
+/**
+ * Upload a file to Supabase storage
+ * @param {File} file - The file to upload
+ * @param {string} bucketName - The bucket to upload to
+ * @param {string} fileName - Optional custom file name
+ * @returns {Promise<{data: Object, error: Error}>} - The upload result
+ */
+export const uploadFile = async (file, bucketName, fileName = null) => {
   try {
-    console.log(`Mock uploading file ${file.name} to folder ${folder}...`);
+    // Generate a unique file name if not provided
+    const uniqueFileName = fileName || `${Date.now()}_${file.name}`;
     
-    // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Upload file to Supabase storage
+    const { data, error } = await supabase.storage
+      .from(bucketName)
+      .upload(uniqueFileName, file);
     
-    // Create a unique filename
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-    const filePath = folder ? `${folder}/${fileName}` : fileName;
-    
-    // Create a mock URL for the file
-    // For images, we can use a data URL to actually display the image
-    let mockUrl = '';
-    
-    if (file.type.startsWith('image/')) {
-      // For images, create a data URL that can actually be displayed
-      mockUrl = await readFileAsDataURL(file);
-    } else {
-      // For other files, create a mock URL
-      mockUrl = `https://example.com/mock-storage/${filePath}`;
+    if (error) {
+      throw error;
     }
     
-    console.log(`Mock upload successful: ${mockUrl.substring(0, 50)}...`);
+    // Get the public URL
+    const { data: urlData } = supabase.storage
+      .from(bucketName)
+      .getPublicUrl(uniqueFileName);
     
-    return { 
-      success: true, 
-      filePath, 
-      publicUrl: mockUrl,
-      bucket: 'mock-bucket',
-      isMock: true
-    };
+    return { data: { ...data, publicUrl: urlData.publicUrl }, error: null };
   } catch (error) {
-    console.error('Error in mock upload:', error);
-    return { success: false, error };
+    console.error(`Error uploading file to ${bucketName}:`, error);
+    return { data: null, error };
   }
 };
 
-// Helper function to read a file as a data URL
-const readFileAsDataURL = (file) => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+/**
+ * Delete a file from Supabase storage
+ * @param {string} bucketName - The bucket containing the file
+ * @param {string} filePath - The path of the file to delete
+ * @returns {Promise<{data: Object, error: Error}>} - The deletion result
+ */
+export const deleteFile = async (bucketName, filePath) => {
+  try {
+    const { data, error } = await supabase.storage
+      .from(bucketName)
+      .remove([filePath]);
+    
+    if (error) {
+      throw error;
+    }
+    
+    return { data, error: null };
+  } catch (error) {
+    console.error(`Error deleting file from ${bucketName}:`, error);
+    return { data: null, error };
+  }
 };

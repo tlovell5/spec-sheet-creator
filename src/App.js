@@ -1,34 +1,42 @@
-import React, { useEffect } from 'react';
-import { supabase } from './supabaseClient';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Dashboard from './Dashboard';
-import EditSpecSheet from './pages/EditSpecSheet';
-import ErrorBoundary from './ErrorBoundary';
-import './index.css'; // Import our Tailwind CSS
+import SpecSheet from './pages/SpecSheet';
+import { SpecSheetProvider } from './context/SpecSheetContext';
+import './styles/main.css';
 
 function App() {
-  useEffect(() => {
-    const initializeApp = async () => {
-      // Fetch initial data
-      const { data, error: fetchError } = await supabase.from('spec_sheets').select('*');
-      if (fetchError) console.error('Error fetching data:', fetchError);
-      else console.log('Data:', data);
-    };
-    
-    initializeApp();
-  }, []);
-
   return (
     <Router>
-      <ErrorBoundary>
-        <div className="min-h-screen bg-gray-50">
+      <div className="app-container">
+        <header className="header">
+          <div className="container">
+            <h1>Spec Sheet Creator</h1>
+          </div>
+        </header>
+        <main className="container">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/edit/:id" element={<EditSpecSheet />} />
-            <Route path="/create" element={<EditSpecSheet />} />
+            <Route 
+              path="/create" 
+              element={
+                <SpecSheetProvider>
+                  <SpecSheet />
+                </SpecSheetProvider>
+              } 
+            />
+            <Route 
+              path="/edit/:id" 
+              element={
+                <SpecSheetProvider>
+                  <SpecSheet />
+                </SpecSheetProvider>
+              } 
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </div>
-      </ErrorBoundary>
+        </main>
+      </div>
     </Router>
   );
 }
