@@ -1,10 +1,10 @@
 import React, { useState, useContext } from 'react';
 import { SpecSheetContext } from '../context/SpecSheetContext';
 import { supabase, STORAGE_BUCKETS, uploadFile } from '../supabaseClient';
+import { SectionContainer, FormInput, FileUpload } from './common';
 
 const CustomerInfo = () => {
   const { specSheetData, setSpecSheetData } = useContext(SpecSheetContext);
-  const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
   
   // Handle input changes
@@ -20,201 +20,153 @@ const CustomerInfo = () => {
     }));
   };
   
-  // Handle logo upload
-  const handleLogoUpload = async (e) => {
-    try {
-      setUploading(true);
-      setUploadError(null);
-      
-      const file = e.target.files[0];
-      
-      if (!file) {
-        return;
+  // Handle logo URL update
+  const handleLogoChange = (url) => {
+    setSpecSheetData(prevData => ({
+      ...prevData,
+      customerInfo: {
+        ...prevData.customerInfo,
+        logo: url
       }
-      
-      // Validate file type
-      const fileExt = file.name.split('.').pop();
-      const allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
-      
-      if (!allowedTypes.includes(fileExt.toLowerCase())) {
-        setUploadError('Invalid file type. Please upload an image file (JPG, PNG, GIF).');
-        setUploading(false);
-        return;
-      }
-      
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setUploadError('File size too large. Maximum size is 5MB.');
-        setUploading(false);
-        return;
-      }
-      
-      // Upload file to Supabase storage
-      const { data, error } = await uploadFile(
-        file, 
-        STORAGE_BUCKETS.CUSTOMER_LOGOS
-      );
-      
-      if (error) {
-        throw error;
-      }
-      
-      // Update spec sheet data with logo URL
-      setSpecSheetData(prevData => ({
-        ...prevData,
-        customerInfo: {
-          ...prevData.customerInfo,
-          logo: data.publicUrl
-        }
-      }));
-      
-      setUploading(false);
-    } catch (error) {
-      console.error('Error uploading logo:', error);
-      setUploadError('Failed to upload logo. Please try again.');
-      setUploading(false);
-    }
+    }));
   };
   
   return (
-    <div className="card spec-sheet-section">
-      <div className="card-header spec-sheet-section-header">
-        <h2 className="spec-sheet-section-title">Customer Information</h2>
+    <SectionContainer id="customerInfo" title="Customer Information">
+      <div className="form-row">
+        <div className="form-col">
+          <FormInput
+            label="Company Name"
+            id="companyName"
+            name="companyName"
+            value={specSheetData.customerInfo.companyName || ''}
+            onChange={handleInputChange}
+            placeholder="Enter company name"
+            required
+          />
+        </div>
+        
+        <div className="form-col">
+          <FormInput
+            label="Contact Name"
+            id="contactName"
+            name="contactName"
+            value={specSheetData.customerInfo.contactName || ''}
+            onChange={handleInputChange}
+            placeholder="Enter contact name"
+          />
+        </div>
       </div>
       
-      <div className="card-body">
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="companyName" className="form-label">Company Name</label>
-            <input
-              type="text"
-              id="companyName"
-              name="companyName"
-              className="form-control"
-              value={specSheetData.customerInfo.companyName || ''}
-              onChange={handleInputChange}
-              placeholder="Enter company name"
-            />
-          </div>
+      <div className="form-row">
+        <div className="form-col">
+          <FormInput
+            label="Contact Email"
+            id="contactEmail"
+            name="contactEmail"
+            type="email"
+            value={specSheetData.customerInfo.contactEmail || ''}
+            onChange={handleInputChange}
+            placeholder="Enter contact email"
+          />
         </div>
         
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="companyAddress" className="form-label">Company Address</label>
-            <textarea
-              id="companyAddress"
-              name="companyAddress"
-              className="form-control"
-              value={specSheetData.customerInfo.companyAddress || ''}
-              onChange={handleInputChange}
-              placeholder="Enter company address"
-              rows="3"
-            ></textarea>
-          </div>
-        </div>
-        
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="contactName" className="form-label">Contact Name</label>
-            <input
-              type="text"
-              id="contactName"
-              name="contactName"
-              className="form-control"
-              value={specSheetData.customerInfo.contactName || ''}
-              onChange={handleInputChange}
-              placeholder="Enter contact name"
-            />
-          </div>
-        </div>
-        
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="email" className="form-label">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              className="form-control"
-              value={specSheetData.customerInfo.email || ''}
-              onChange={handleInputChange}
-              placeholder="Enter email address"
-            />
-          </div>
-        </div>
-        
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="phone" className="form-label">Phone Number</label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              className="form-control"
-              value={specSheetData.customerInfo.phone || ''}
-              onChange={handleInputChange}
-              placeholder="Enter phone number"
-            />
-          </div>
-        </div>
-        
-        <div className="form-row">
-          <div className="form-group">
-            <label className="form-label">Company Logo</label>
-            
-            <div className="logo-upload-container">
-              {specSheetData.customerInfo.logo ? (
-                <div className="logo-preview">
-                  <img 
-                    src={specSheetData.customerInfo.logo} 
-                    alt="Company Logo" 
-                    className="logo-image"
-                  />
-                  <button
-                    type="button"
-                    className="btn btn-danger btn-sm mt-2"
-                    onClick={() => {
-                      setSpecSheetData(prevData => ({
-                        ...prevData,
-                        customerInfo: {
-                          ...prevData.customerInfo,
-                          logo: null
-                        }
-                      }));
-                    }}
-                  >
-                    Remove Logo
-                  </button>
-                </div>
-              ) : (
-                <div className="logo-upload">
-                  <label htmlFor="logo-upload" className="btn btn-secondary">
-                    {uploading ? 'Uploading...' : 'Upload Logo'}
-                  </label>
-                  <input
-                    type="file"
-                    id="logo-upload"
-                    accept="image/*"
-                    onChange={handleLogoUpload}
-                    style={{ display: 'none' }}
-                    disabled={uploading}
-                  />
-                  <p className="text-muted mt-2">
-                    Upload a company logo (JPG, PNG, GIF, max 5MB)
-                  </p>
-                </div>
-              )}
-              
-              {uploadError && (
-                <div className="text-danger mt-2">
-                  {uploadError}
-                </div>
-              )}
-            </div>
-          </div>
+        <div className="form-col">
+          <FormInput
+            label="Contact Phone"
+            id="contactPhone"
+            name="contactPhone"
+            value={specSheetData.customerInfo.contactPhone || ''}
+            onChange={handleInputChange}
+            placeholder="Enter contact phone"
+          />
         </div>
       </div>
-    </div>
+      
+      <div className="form-row">
+        <div className="form-col">
+          <FormInput
+            label="Address"
+            id="address"
+            name="address"
+            value={specSheetData.customerInfo.address || ''}
+            onChange={handleInputChange}
+            placeholder="Enter address"
+          />
+        </div>
+        
+        <div className="form-col">
+          <FormInput
+            label="City"
+            id="city"
+            name="city"
+            value={specSheetData.customerInfo.city || ''}
+            onChange={handleInputChange}
+            placeholder="Enter city"
+          />
+        </div>
+      </div>
+      
+      <div className="form-row">
+        <div className="form-col-third">
+          <FormInput
+            label="State/Province"
+            id="state"
+            name="state"
+            value={specSheetData.customerInfo.state || ''}
+            onChange={handleInputChange}
+            placeholder="Enter state/province"
+          />
+        </div>
+        
+        <div className="form-col-third">
+          <FormInput
+            label="Zip/Postal Code"
+            id="zipCode"
+            name="zipCode"
+            value={specSheetData.customerInfo.zipCode || ''}
+            onChange={handleInputChange}
+            placeholder="Enter zip/postal code"
+          />
+        </div>
+        
+        <div className="form-col-third">
+          <FormInput
+            label="Country"
+            id="country"
+            name="country"
+            value={specSheetData.customerInfo.country || ''}
+            onChange={handleInputChange}
+            placeholder="Enter country"
+          />
+        </div>
+      </div>
+      
+      <div className="form-row">
+        <div className="form-col">
+          <FileUpload
+            bucketName={STORAGE_BUCKETS.CUSTOMER_LOGOS}
+            label="Company Logo"
+            value={specSheetData.customerInfo.logo || ''}
+            onChange={handleLogoChange}
+            accept="image/*"
+            fileNamePrefix="logo-"
+            error={uploadError}
+          />
+        </div>
+        
+        <div className="form-col">
+          <FormInput
+            label="Website"
+            id="website"
+            name="website"
+            value={specSheetData.customerInfo.website || ''}
+            onChange={handleInputChange}
+            placeholder="Enter website URL"
+          />
+        </div>
+      </div>
+    </SectionContainer>
   );
 };
 

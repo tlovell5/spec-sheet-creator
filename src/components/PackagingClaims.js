@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import { SpecSheetContext } from '../context/SpecSheetContext';
+import { SectionContainer } from './common';
 
 const PackagingClaims = () => {
   const { specSheetData, setSpecSheetData } = useContext(SpecSheetContext);
@@ -87,114 +88,70 @@ const PackagingClaims = () => {
   };
 
   return (
-    <div className="card spec-sheet-section">
-      <div className="card-header spec-sheet-section-header">
-        <h2 className="spec-sheet-section-title">Packaging Claims</h2>
-      </div>
-      
-      <div className="card-body">
-        <div className="form-section mb-4">
-          <h3 className="mb-3">Allergen Claims</h3>
-          <p className="text-muted mb-3">Select all allergens present in the product, or select "None" if no allergens are present.</p>
-          
-          <div className="allergen-options">
-            {allergenOptions.map(allergen => (
-              <div 
-                key={allergen.id}
-                className={`claim-option ${(specSheetData.packagingClaims?.allergens || []).includes(allergen.id) ? 'selected' : ''}`}
-                onClick={() => handleAllergenChange(allergen.id)}
-              >
-                <div className="custom-checkbox">
-                  {(specSheetData.packagingClaims?.allergens || []).includes(allergen.id) && (
-                    <span className="checkmark">✓</span>
-                  )}
-                </div>
-                <span className="claim-label">{allergen.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+    <SectionContainer id="packagingClaims" title="Packaging Claims">
+      <div className="subsection">
+        <h3 className="subsection-title">Allergen Claims</h3>
+        <p className="subsection-description">Select all allergens present in the product, or select "None" if no allergens are present.</p>
         
-        <div className="form-section">
-          <h3 className="mb-3">Packaging Claims</h3>
-          <p className="text-muted mb-3">Select all claims that will appear on the product packaging.</p>
-          
-          <div className="packaging-claims-options">
-            {packagingClaimOptions.map(claim => (
-              <div 
-                key={claim.id}
-                className={`claim-option ${(specSheetData.packagingClaims?.claims || []).includes(claim.id) ? 'selected' : ''}`}
-                onClick={() => handleClaimChange(claim.id)}
-              >
-                <div className="custom-checkbox">
-                  {(specSheetData.packagingClaims?.claims || []).includes(claim.id) && (
-                    <span className="checkmark">✓</span>
-                  )}
-                </div>
-                <span className="claim-label">{claim.label}</span>
-              </div>
-            ))}
-          </div>
+        <div className="checkbox-grid">
+          {allergenOptions.map(allergen => (
+            <div className="checkbox-item" key={allergen.id}>
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={(specSheetData.packagingClaims?.allergens || []).includes(allergen.id)}
+                  onChange={() => handleAllergenChange(allergen.id)}
+                  className="checkbox-input"
+                />
+                <span className="checkbox-text">{allergen.label}</span>
+              </label>
+            </div>
+          ))}
         </div>
       </div>
       
-      <style jsx="true">{`
-        .allergen-options,
-        .packaging-claims-options {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 10px;
-          margin-bottom: 20px;
-        }
+      <div className="subsection">
+        <h3 className="subsection-title">Product Claims</h3>
+        <p className="subsection-description">Select all claims that apply to this product.</p>
         
-        .claim-option {
-          display: flex;
-          align-items: center;
-          padding: 8px 12px;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          min-width: 150px;
-        }
+        <div className="checkbox-grid">
+          {packagingClaimOptions.map(claim => (
+            <div className="checkbox-item" key={claim.id}>
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={(specSheetData.packagingClaims?.claims || []).includes(claim.id)}
+                  onChange={() => handleClaimChange(claim.id)}
+                  className="checkbox-input"
+                />
+                <span className="checkbox-text">{claim.label}</span>
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      <div className="subsection">
+        <h3 className="subsection-title">Additional Claims</h3>
+        <p className="subsection-description">Enter any additional claims or certifications.</p>
         
-        .claim-option:hover {
-          border-color: #2e7d32;
-          background-color: rgba(46, 125, 50, 0.05);
-        }
-        
-        .claim-option.selected {
-          border-color: #2e7d32;
-          background-color: rgba(46, 125, 50, 0.1);
-        }
-        
-        .custom-checkbox {
-          width: 18px;
-          height: 18px;
-          border: 1px solid #aaa;
-          border-radius: 3px;
-          margin-right: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        
-        .claim-option.selected .custom-checkbox {
-          background-color: #2e7d32;
-          border-color: #2e7d32;
-        }
-        
-        .checkmark {
-          color: white;
-          font-size: 12px;
-          line-height: 1;
-        }
-        
-        .claim-label {
-          font-size: 14px;
-        }
-      `}</style>
-    </div>
+        <textarea
+          className="form-control"
+          value={specSheetData.packagingClaims?.additionalClaims || ''}
+          onChange={(e) => {
+            setSpecSheetData(prevData => ({
+              ...prevData,
+              packagingClaims: {
+                ...prevData.packagingClaims,
+                additionalClaims: e.target.value
+              }
+            }));
+          }}
+          placeholder="Enter additional claims or certifications"
+          rows="3"
+        ></textarea>
+      </div>
+    </SectionContainer>
   );
 };
 

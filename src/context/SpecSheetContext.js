@@ -496,71 +496,262 @@ export const SpecSheetProvider = ({ children, specSheetId }) => {
   };
   
   // Export spec sheet as PDF
-  const exportAsPdf = async () => {
+  const exportAsPdf = useCallback(async (specSheetToExport = null) => {
     try {
-      // Get the spec sheet container element
-      const element = document.getElementById('spec-sheet-container');
+      const data = specSheetToExport || specSheetData;
       
-      if (!element) {
-        throw new Error('Element not found');
-      }
-      
-      // Create a new jsPDF instance
-      const pdf = new jsPDF({
+      // Create a new PDF document
+      const doc = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
       
-      // Add logo to the top left
-      if (specSheetData.customerInfo.logo) {
-        pdf.addImage(
-          specSheetData.customerInfo.logo,
-          'JPEG',
-          10,
-          10,
-          40,
-          20
-        );
-      }
+      // Set smaller font size for compact printing
+      const normalFontSize = 9;
+      const headerFontSize = 12;
+      const subheaderFontSize = 10;
       
       // Add title
-      pdf.setFontSize(18);
-      pdf.text(
-        `${specSheetData.productIdentification.productName || 'Spec Sheet'}`,
-        pdf.internal.pageSize.width / 2,
-        20,
-        { align: 'center' }
-      );
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${data.documentType}: ${data.productIdentification?.productName || 'New Product'}`, 15, 15);
       
       // Add revision and date
-      pdf.setFontSize(10);
-      pdf.text(
-        `Revision: ${specSheetData.revision}`,
-        10,
-        pdf.internal.pageSize.height - 10
-      );
+      doc.setFontSize(normalFontSize);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Revision: ${data.revision || '1.0'} | Status: ${data.status || 'Draft'} | Date: ${new Date().toLocaleDateString()}`, 15, 22);
       
-      // Add page number
-      pdf.text(
-        `Page 1 of 1`,
-        pdf.internal.pageSize.width - 20,
-        pdf.internal.pageSize.height - 10
-      );
+      let yPos = 30;
+      const pageWidth = doc.internal.pageSize.width;
+      const contentWidth = pageWidth - 30; // 15mm margins on each side
+      
+      // Helper function to add section headers
+      const addSectionHeader = (title, y) => {
+        doc.setFontSize(headerFontSize);
+        doc.setFont('helvetica', 'bold');
+        doc.setDrawColor(0);
+        doc.setFillColor(240, 240, 240);
+        doc.rect(15, y, contentWidth, 7, 'F');
+        doc.text(title, 17, y + 5);
+        return y + 10;
+      };
+      
+      // Helper function to add subsection headers
+      const addSubsectionHeader = (title, y) => {
+        doc.setFontSize(subheaderFontSize);
+        doc.setFont('helvetica', 'bold');
+        doc.text(title, 15, y);
+        return y + 5;
+      };
+      
+      // Helper function to add text with label
+      const addLabeledText = (label, value, y, indent = 0) => {
+        doc.setFontSize(normalFontSize);
+        doc.setFont('helvetica', 'bold');
+        doc.text(label, 15 + indent, y);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`: ${value || ''}`, 15 + indent + doc.getTextWidth(label), y);
+        return y + 5;
+      };
+      
+      // Helper function to check if we need a new page
+      const checkNewPage = (y, requiredSpace = 20) => {
+        if (y + requiredSpace > doc.internal.pageSize.height - 15) {
+          doc.addPage();
+          return 15; // Reset y position to top of new page with margin
+        }
+        return y;
+      };
+      
+      // Customer Info Section
+      yPos = addSectionHeader('Customer Information', yPos);
+      if (data.customerInfo) {
+        yPos = addLabeledText('Company', data.customerInfo.name, yPos);
+        yPos = addLabeledText('Contact', data.customerInfo.contactName, yPos);
+        yPos = addLabeledText('Email', data.customerInfo.contactEmail, yPos);
+        yPos = addLabeledText('Phone', data.customerInfo.contactPhone, yPos);
+      }
+      
+      // Product Identification Section
+      yPos = checkNewPage(yPos);
+      yPos = addSectionHeader('Product Identification', yPos);
+      if (data.productIdentification) {
+        yPos = addLabeledText('Product Name', data.productIdentification.productName, yPos);
+        yPos = addLabeledText('Product Code', data.productIdentification.productCode, yPos);
+        yPos = addLabeledText('UPC', data.productIdentification.upc, yPos);
+        yPos = addLabeledText('Net Weight', `${data.productIdentification.netWeight || ''} ${data.productIdentification.netWeightUnit || ''}`, yPos);
+        yPos = addLabeledText('Packaging Claim Weight', `${data.productIdentification.packagingClaimWeight || ''} ${data.productIdentification.packagingClaimWeightUnit || ''}`, yPos);
+      }
+      
+      // Packaging Claims Section - Compact format
+      yPos = checkNewPage(yPos);
+      yPos = addSectionHeader('Packaging Claims', yPos);
+      if (data.packagingClaims) {
+        // Allergens in a compact format
+        if (data.packagingClaims.allergens && data.packagingClaims.allergens.length > 0) {
+          yPos = addSubsectionHeader('Allergens', yPos);
+          const allergensText = data.packagingClaims.allergens.join(', ');
+          doc.setFontSize(normalFontSize);
+          doc.setFont('helvetica', 'normal');
+          doc.text(allergensText, 15, yPos, { maxWidth: contentWidth });
+          yPos += 8;
+        }
+        
+        // Claims in a compact format
+        if (data.packagingClaims.claims && data.packagingClaims.claims.length > 0) {
+          yPos = addSubsectionHeader('Claims', yPos);
+          const claimsText = data.packagingClaims.claims.join(', ');
+          doc.setFontSize(normalFontSize);
+          doc.setFont('helvetica', 'normal');
+          doc.text(claimsText, 15, yPos, { maxWidth: contentWidth });
+          yPos += 8;
+        }
+      }
+      
+      // Bill of Materials Section - Table format for compactness
+      yPos = checkNewPage(yPos, 40); // Need more space for tables
+      yPos = addSectionHeader('Bill of Materials', yPos);
+      
+      // Ingredients Table
+      if (data.billOfMaterials && data.billOfMaterials.ingredients && data.billOfMaterials.ingredients.length > 0) {
+        yPos = addSubsectionHeader('Ingredients', yPos);
+        
+        const ingredientsTableData = data.billOfMaterials.ingredients.map(ingredient => [
+          ingredient.name || '',
+          ingredient.percentage ? `${ingredient.percentage}%` : '',
+          ingredient.weight ? `${ingredient.weight} lbs` : '',
+          ingredient.supplier || '',
+          ingredient.notes || ''
+        ]);
+        
+        doc.autoTable({
+          head: [['Ingredient', 'Percentage', 'Weight', 'Supplier', 'Notes']],
+          body: ingredientsTableData,
+          startY: yPos,
+          margin: { left: 15, right: 15 },
+          styles: { fontSize: normalFontSize, cellPadding: 1 },
+          headStyles: { fillColor: [46, 125, 50] },
+          columnStyles: {
+            0: { cellWidth: 40 },
+            1: { cellWidth: 25 },
+            2: { cellWidth: 25 },
+            3: { cellWidth: 40 },
+            4: { cellWidth: 'auto' }
+          }
+        });
+        
+        yPos = doc.lastAutoTable.finalY + 5;
+      }
+      
+      // Inclusions Table (if any)
+      yPos = checkNewPage(yPos, 30);
+      if (data.billOfMaterials && data.billOfMaterials.inclusions && data.billOfMaterials.inclusions.length > 0) {
+        yPos = addSubsectionHeader('Inclusions', yPos);
+        
+        const inclusionsTableData = data.billOfMaterials.inclusions.map(inclusion => [
+          inclusion.name || '',
+          inclusion.percentage ? `${inclusion.percentage}%` : '',
+          inclusion.weight ? `${inclusion.weight} lbs` : '',
+          inclusion.supplier || '',
+          inclusion.notes || ''
+        ]);
+        
+        doc.autoTable({
+          head: [['Inclusion', 'Percentage', 'Weight', 'Supplier', 'Notes']],
+          body: inclusionsTableData,
+          startY: yPos,
+          margin: { left: 15, right: 15 },
+          styles: { fontSize: normalFontSize, cellPadding: 1 },
+          headStyles: { fillColor: [46, 125, 50] }
+        });
+        
+        yPos = doc.lastAutoTable.finalY + 5;
+      }
+      
+      // Packaging Table (if any)
+      yPos = checkNewPage(yPos, 30);
+      if (data.billOfMaterials && data.billOfMaterials.packaging && data.billOfMaterials.packaging.length > 0) {
+        yPos = addSubsectionHeader('Packaging', yPos);
+        
+        const packagingTableData = data.billOfMaterials.packaging.map(item => [
+          item.name || '',
+          item.quantity || '',
+          item.supplier || '',
+          item.notes || ''
+        ]);
+        
+        doc.autoTable({
+          head: [['Item', 'Quantity', 'Supplier', 'Notes']],
+          body: packagingTableData,
+          startY: yPos,
+          margin: { left: 15, right: 15 },
+          styles: { fontSize: normalFontSize, cellPadding: 1 },
+          headStyles: { fillColor: [46, 125, 50] }
+        });
+        
+        yPos = doc.lastAutoTable.finalY + 5;
+      }
+      
+      // Case Table (if any)
+      yPos = checkNewPage(yPos, 30);
+      if (data.billOfMaterials && data.billOfMaterials.caseItems && data.billOfMaterials.caseItems.length > 0) {
+        yPos = addSubsectionHeader('Case Items', yPos);
+        
+        const caseTableData = data.billOfMaterials.caseItems.map(item => [
+          item.name || '',
+          item.quantity || '',
+          item.supplier || '',
+          item.notes || ''
+        ]);
+        
+        doc.autoTable({
+          head: [['Item', 'Quantity', 'Supplier', 'Notes']],
+          body: caseTableData,
+          startY: yPos,
+          margin: { left: 15, right: 15 },
+          styles: { fontSize: normalFontSize, cellPadding: 1 },
+          headStyles: { fillColor: [46, 125, 50] }
+        });
+        
+        yPos = doc.lastAutoTable.finalY + 5;
+      }
+      
+      // Production Details Section
+      yPos = checkNewPage(yPos);
+      yPos = addSectionHeader('Production Details', yPos);
+      // Add production details in a compact format...
+      
+      // Packout Details Section
+      yPos = checkNewPage(yPos);
+      yPos = addSectionHeader('Packout Details', yPos);
+      if (data.packoutDetails) {
+        yPos = addLabeledText('Units Per Case', data.packoutDetails.unitsPerCase, yPos);
+        yPos = addLabeledText('Cases Per Pallet', data.packoutDetails.casesPerPallet, yPos);
+        yPos = addLabeledText('Units Per Pallet', data.packoutDetails.unitsPerPallet, yPos);
+        yPos = addLabeledText('Case Weight', data.packoutDetails.caseWeight, yPos);
+        yPos = addLabeledText('Pallet Weight', data.packoutDetails.palletWeight, yPos);
+      }
+      
+      // Signatures Section
+      yPos = checkNewPage(yPos);
+      yPos = addSectionHeader('Signatures', yPos);
+      if (data.signatures) {
+        yPos = addLabeledText('Customer Approval', data.signatures.customerApproval ? 'Approved' : 'Pending', yPos);
+        yPos = addLabeledText('Quality Manager', data.signatures.qualityManager ? 'Approved' : 'Pending', yPos);
+        yPos = addLabeledText('Production Manager', data.signatures.productionManager ? 'Approved' : 'Pending', yPos);
+      }
       
       // Save the PDF
-      pdf.save(`${specSheetData.productIdentification.productName || 'spec-sheet'}.pdf`);
-      
-      // Add to activity log
-      addToActivityLog('Exported spec sheet as PDF');
+      doc.save(`${data.productIdentification?.productName || 'spec-sheet'}.pdf`);
       
       return true;
-    } catch (err) {
-      console.error('Error exporting spec sheet as PDF:', err);
-      setError('Failed to export spec sheet as PDF');
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      setError('Failed to export PDF: ' + error.message);
       return false;
     }
-  };
+  }, [specSheetData]);
   
   // Context value
   const contextValue = {
