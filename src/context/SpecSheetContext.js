@@ -307,11 +307,18 @@ export const SpecSheetProvider = ({ children, specSheetId }) => {
       // Convert camelCase fields to snake_case for Supabase
       dataToSave = camelToSnakeCase(dataToSave);
       
-      // For new spec sheets, set created_at
-      if (!dataToSave.id) {
+      // Check if this is a new spec sheet (no id or id is null/undefined)
+      const isNewSpecSheet = !dataToSave.id;
+      
+      if (isNewSpecSheet) {
+        // For new spec sheets, set created_at
         if (!dataToSave.created_at) {
           dataToSave.created_at = new Date().toISOString();
         }
+        
+        // ALWAYS remove the id field completely for new records
+        // This ensures Supabase will generate a UUID
+        delete dataToSave.id;
         
         console.log("Saving new spec sheet with data:", JSON.stringify(dataToSave));
         
