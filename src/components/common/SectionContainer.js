@@ -1,5 +1,4 @@
 import React from 'react';
-import Card from './Card';
 
 /**
  * Reusable section container component for spec sheet sections
@@ -11,6 +10,7 @@ import Card from './Card';
  * @param {boolean} props.defaultCollapsed - Whether the section is collapsed by default
  * @param {string} props.className - Additional CSS class
  * @param {React.ReactNode} props.actions - Optional actions to display in the header
+ * @param {boolean} props.compact - Whether to use compact styling
  */
 const SectionContainer = ({
   id,
@@ -19,19 +19,18 @@ const SectionContainer = ({
   collapsible = true,
   defaultCollapsed = false,
   className = '',
-  actions
+  actions,
+  compact = true
 }) => {
   return (
-    <div id={id} className={`spec-sheet-section ${className}`}>
-      <Card
-        title={title}
-        collapsible={collapsible}
-        defaultCollapsed={defaultCollapsed}
-        actions={actions}
-        className="mb-4"
-      >
+    <div id={id} className={`section-container ${className}`}>
+      <div className="section-header">
+        <h3 className="section-title">{title}</h3>
+        {actions && <div className="section-actions">{actions}</div>}
+      </div>
+      <div className="section-body">
         {children}
-      </Card>
+      </div>
     </div>
   );
 };

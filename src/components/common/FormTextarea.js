@@ -13,6 +13,7 @@ import React from 'react';
  * @param {string} props.className - Additional CSS class
  * @param {number} props.rows - Number of rows
  * @param {Object} props.textareaProps - Additional props for the textarea element
+ * @param {string} props.size - Textarea size (sm, md, lg)
  */
 const FormTextarea = ({
   id,
@@ -24,13 +25,14 @@ const FormTextarea = ({
   error,
   className = '',
   rows = 3,
-  textareaProps = {}
+  textareaProps = {},
+  size = 'md'
 }) => {
   const textareaId = id || `textarea-${label?.toLowerCase().replace(/\s+/g, '-')}`;
   const isInvalid = !!error;
   
   return (
-    <div className={`form-group ${className}`}>
+    <div className={`form-group compact ${className}`}>
       {label && (
         <label htmlFor={textareaId} className="form-label">
           {label}
@@ -39,14 +41,14 @@ const FormTextarea = ({
       )}
       <textarea
         id={textareaId}
-        className={`form-control ${isInvalid ? 'is-invalid' : ''}`}
+        className={`form-control form-control-${size} ${isInvalid ? 'is-invalid' : ''}`}
         value={value || ''}
         onChange={onChange}
         placeholder={placeholder}
-        required={required}
         rows={rows}
+        required={required}
         {...textareaProps}
-      />
+      ></textarea>
       {isInvalid && <div className="invalid-feedback">{error}</div>}
     </div>
   );

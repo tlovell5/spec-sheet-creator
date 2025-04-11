@@ -13,6 +13,7 @@ import React from 'react';
  * @param {string} props.error - Error message
  * @param {string} props.className - Additional CSS class
  * @param {Object} props.inputProps - Additional props for the input element
+ * @param {string} props.size - Input size (sm, md, lg)
  */
 const FormInput = ({
   id,
@@ -24,13 +25,14 @@ const FormInput = ({
   required = false,
   error,
   className = '',
-  inputProps = {}
+  inputProps = {},
+  size = 'md'
 }) => {
   const inputId = id || `input-${label?.toLowerCase().replace(/\s+/g, '-')}`;
   const isInvalid = !!error;
   
   return (
-    <div className={`form-group ${className}`}>
+    <div className={`form-group compact ${className}`}>
       {label && (
         <label htmlFor={inputId} className="form-label">
           {label}
@@ -40,10 +42,10 @@ const FormInput = ({
       <input
         id={inputId}
         type={type}
-        className={`form-control ${isInvalid ? 'is-invalid' : ''}`}
-        value={value || ''}
+        value={value}
         onChange={onChange}
         placeholder={placeholder}
+        className={`form-control form-control-${size} ${isInvalid ? 'is-invalid' : ''}`}
         required={required}
         {...inputProps}
       />

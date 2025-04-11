@@ -12,6 +12,7 @@ import React from 'react';
  * @param {string} props.error - Error message
  * @param {string} props.className - Additional CSS class
  * @param {Object} props.selectProps - Additional props for the select element
+ * @param {string} props.size - Select size (sm, md, lg)
  */
 const FormSelect = ({
   id,
@@ -22,13 +23,14 @@ const FormSelect = ({
   required = false,
   error,
   className = '',
-  selectProps = {}
+  selectProps = {},
+  size = 'md'
 }) => {
   const selectId = id || `select-${label?.toLowerCase().replace(/\s+/g, '-')}`;
   const isInvalid = !!error;
   
   return (
-    <div className={`form-group ${className}`}>
+    <div className={`form-group compact ${className}`}>
       {label && (
         <label htmlFor={selectId} className="form-label">
           {label}
@@ -37,7 +39,7 @@ const FormSelect = ({
       )}
       <select
         id={selectId}
-        className={`form-control ${isInvalid ? 'is-invalid' : ''}`}
+        className={`form-select form-select-${size} ${isInvalid ? 'is-invalid' : ''}`}
         value={value || ''}
         onChange={onChange}
         required={required}

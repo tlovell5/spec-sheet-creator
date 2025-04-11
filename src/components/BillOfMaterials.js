@@ -7,6 +7,7 @@ import PackagingTable from './BillOfMaterials/PackagingTable';
 import CaseTable from './BillOfMaterials/CaseTable';
 import { v4 as uuidv4 } from 'uuid';
 import { calculateIngredientWeights } from '../utils/weightUtils';
+import { SectionContainer } from './common';
 
 const BillOfMaterials = () => {
   const { specSheetData, setSpecSheetData } = useContext(SpecSheetContext);
@@ -231,64 +232,84 @@ const BillOfMaterials = () => {
   };
   
   return (
-    <div className="bill-of-materials">
-      <h2>Bill of Materials</h2>
-      
-      <div className="section">
-        <h3>WIP</h3>
-        <WIPTable 
-          packagingClaimWeight={specSheetData.productIdentification?.netWeight}
-          weightUnit={specSheetData.productIdentification?.weightUnit || 'g'}
-        />
+    <SectionContainer id="billOfMaterials" title="Bill of Materials">
+      <div className="bom-container">
+        <div className="bom-row">
+          <div className="bom-col">
+            <div className="subsection">
+              <h3 className="subsection-title">WIP</h3>
+              <WIPTable 
+                packagingClaimWeight={specSheetData.productIdentification?.netWeight}
+                weightUnit={specSheetData.productIdentification?.weightUnit || 'g'}
+              />
+            </div>
+          </div>
+        </div>
+        
+        <div className="bom-row">
+          <div className="bom-col">
+            <div className="subsection">
+              <div className="subsection-header">
+                <h3 className="subsection-title">Ingredients</h3>
+                <button 
+                  type="button" 
+                  className="btn btn-sm btn-primary"
+                  onClick={calculateWeights}
+                >
+                  Calculate Weights
+                </button>
+              </div>
+              <IngredientsTable 
+                ingredients={ingredients}
+                onAddIngredient={handleAddIngredient}
+                onUpdateIngredient={handleUpdateIngredient}
+                onRemoveIngredient={handleRemoveIngredient}
+              />
+            </div>
+          </div>
+        </div>
+        
+        <div className="bom-row">
+          <div className="bom-col-half">
+            <div className="subsection">
+              <h3 className="subsection-title">Inclusions</h3>
+              <InclusionsTable 
+                inclusions={inclusions}
+                onAddInclusion={handleAddInclusion}
+                onUpdateInclusion={handleUpdateInclusion}
+                onRemoveInclusion={handleRemoveInclusion}
+              />
+            </div>
+          </div>
+          
+          <div className="bom-col-half">
+            <div className="subsection">
+              <h3 className="subsection-title">Packaging</h3>
+              <PackagingTable 
+                packaging={packaging}
+                onAddPackaging={handleAddPackaging}
+                onUpdatePackaging={handleUpdatePackaging}
+                onRemovePackaging={handleRemovePackaging}
+              />
+            </div>
+          </div>
+        </div>
+        
+        <div className="bom-row">
+          <div className="bom-col">
+            <div className="subsection">
+              <h3 className="subsection-title">Case</h3>
+              <CaseTable 
+                caseItems={caseItems}
+                onAddCaseItem={handleAddCaseItem}
+                onUpdateCaseItem={handleUpdateCaseItem}
+                onRemoveCaseItem={handleRemoveCaseItem}
+              />
+            </div>
+          </div>
+        </div>
       </div>
-      
-      <div className="section">
-        <h3>Ingredients</h3>
-        <button 
-          type="button" 
-          className="btn btn-primary mb-2"
-          onClick={calculateWeights}
-        >
-          Calculate Weights
-        </button>
-        <IngredientsTable 
-          ingredients={ingredients}
-          onAddIngredient={handleAddIngredient}
-          onUpdateIngredient={handleUpdateIngredient}
-          onRemoveIngredient={handleRemoveIngredient}
-        />
-      </div>
-      
-      <div className="section">
-        <h3>Inclusions</h3>
-        <InclusionsTable 
-          inclusions={inclusions}
-          onAddInclusion={handleAddInclusion}
-          onUpdateInclusion={handleUpdateInclusion}
-          onRemoveInclusion={handleRemoveInclusion}
-        />
-      </div>
-      
-      <div className="section">
-        <h3>Packaging</h3>
-        <PackagingTable 
-          packaging={packaging}
-          onAddPackaging={handleAddPackaging}
-          onUpdatePackaging={handleUpdatePackaging}
-          onRemovePackaging={handleRemovePackaging}
-        />
-      </div>
-      
-      <div className="section">
-        <h3>Case</h3>
-        <CaseTable 
-          caseItems={caseItems}
-          onAddCaseItem={handleAddCaseItem}
-          onUpdateCaseItem={handleUpdateCaseItem}
-          onRemoveCaseItem={handleRemoveCaseItem}
-        />
-      </div>
-    </div>
+    </SectionContainer>
   );
 };
 

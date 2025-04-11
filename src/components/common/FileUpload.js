@@ -14,6 +14,7 @@ import LoadingSpinner from './LoadingSpinner';
  * @param {string} props.error - Error message
  * @param {string} props.className - Additional CSS class
  * @param {string} props.fileNamePrefix - Prefix for uploaded file names
+ * @param {string} props.size - Component size (sm, md, lg)
  */
 const FileUpload = ({
   bucketName,
@@ -24,7 +25,8 @@ const FileUpload = ({
   required = false,
   error,
   className = '',
-  fileNamePrefix = ''
+  fileNamePrefix = '',
+  size = 'md'
 }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
@@ -104,9 +106,9 @@ const FileUpload = ({
   const isInvalid = !!displayError;
   
   return (
-    <div className={`form-group ${className}`}>
+    <div className={`form-group compact compact-file-upload ${className}`}>
       {label && (
-        <label className="form-label">
+        <label className="form-label file-upload-label">
           {label}
           {required && <span className="text-danger ml-1">*</span>}
         </label>
@@ -114,29 +116,34 @@ const FileUpload = ({
       
       <div className={`file-upload-container ${isInvalid ? 'is-invalid' : ''}`}>
         {value ? (
-          <div className="file-preview">
+          <div className="file-upload-preview">
             {accept.includes('image/') ? (
-              <img 
-                src={value} 
-                alt="Preview" 
-                className="file-preview-image" 
-              />
+              <div className="preview-with-controls">
+                <img 
+                  src={value} 
+                  alt="Preview" 
+                  className="file-preview-image" 
+                />
+                <button 
+                  type="button" 
+                  className="btn btn-sm btn-danger file-remove-btn" 
+                  onClick={handleRemoveFile}
+                >
+                  ✕
+                </button>
+              </div>
             ) : (
-              <div className="file-preview-icon">
-                <i className="fas fa-file"></i>
+              <div className="file-info-with-controls">
+                <span className="file-name">{fileName || 'Uploaded file'}</span>
+                <button 
+                  type="button" 
+                  className="btn btn-sm btn-danger" 
+                  onClick={handleRemoveFile}
+                >
+                  Remove
+                </button>
               </div>
             )}
-            
-            <div className="file-preview-info">
-              <span className="file-name">{fileName || 'Uploaded file'}</span>
-              <button 
-                type="button" 
-                className="btn btn-sm btn-danger" 
-                onClick={handleRemoveFile}
-              >
-                Remove
-              </button>
-            </div>
           </div>
         ) : (
           <div className="file-upload-input">
@@ -151,25 +158,22 @@ const FileUpload = ({
             />
             <label 
               htmlFor={`file-upload-${label?.toLowerCase().replace(/\s+/g, '-')}`}
-              className="file-upload-label"
+              className={`file-upload-button btn btn-sm btn-secondary btn-${size}`}
             >
               {isUploading ? (
-                <div className="d-flex align-items-center">
+                <div className="upload-progress">
                   <LoadingSpinner size="small" text="" />
-                  <span className="ml-2">Uploading...</span>
+                  <span>Uploading...</span>
                 </div>
               ) : (
-                <>
-                  <i className="fas fa-cloud-upload-alt"></i>
-                  <span>Choose a file</span>
-                </>
+                <span>Choose a file</span>
               )}
             </label>
           </div>
         )}
       </div>
       
-      {isInvalid && <div className="invalid-feedback d-block">{displayError}</div>}
+      {isInvalid && <div className="invalid-feedback">{displayError}</div>}
     </div>
   );
 };
